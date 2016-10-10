@@ -130,7 +130,7 @@
 
 #### Optional
 
-1. Разделить JDBC реализацию для HSQLDB и Postgres (через `@Profile`, HSQLDB не умеет работать с Java8 Time API)
+1. Починить `JdbcMealRepositoryImpl` (HSQLDB не умеет работать с Java8 Time API). Например разделить реализацию для HSQLDB и Postgres через `@Profile`.
 2. Починить `MealServlet` / `SpringMain` - добавить профили. Попробуйте поднять Spring контекст без использования `spring.profiles.activ`.
 3. Сделать и протестировать в сервисах методы
   - 3.1  достать по id пользователя вместе с его едой
