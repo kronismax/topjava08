@@ -52,6 +52,8 @@
  > Вопрос: почему после apply не запустится Tomcat?
  
 - <a href="https://dzone.com/articles/using-spring-profiles-xml">Using Spring Profiles in XML Config</a>
+- <a href="https://www.mkyong.com/spring/spring-profiles-example/">Spring Profiles example</a>
+
 > Галочка в XML профиле влияет только на отображение в IDEA и никак на выполнение кода.
 
 - Дополнительно: <a href="http://stackoverflow.com/questions/20551681/spring-integration-tests-with-profile">использование `ActiveProfilesResolver` для профиля тестов</a>
