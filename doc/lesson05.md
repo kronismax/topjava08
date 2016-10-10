@@ -125,7 +125,7 @@
 
 1. Имплементировать `DataJpaMealRepositoryImpl`
 2. Разделить реализации Repository по профилям Spring: `jdbc`, `jpa`, `datajpa` (общее в профилях можно объединять, например `<beans profile="datajpa,jpa">`). Новые профили ортоганальны (независимы) от `postgres`, `hsqldb`.
-3. Сделать тесты всех реализаций (`jdbc, jpa, datajpa`) через наследование (без дублирования), *сделать общий базовый класс для `MealServiceTest` и `UserServiceTest`*.
+3. Сделать тесты всех реализаций (`jdbc, jpa, datajpa`) через наследование (без дублирования), **сделать общий базовый класс для `MealServiceTest` и `UserServiceTest`**.
 4. Запустить все тесты: `mvn test` или в IDEA Maven Lifecycle - test (кнопку skipTest отжать)
 
 #### Optional
