@@ -27,10 +27,10 @@
 #### Apply  4-HW5-optional-fix-jdbc-profiles
 
 > - HSQLDB driver не понимает `LocalDateTime`, сделал внутренние классы: `Java8JdbcMealRepositoryImpl` и `TimestampJdbcMealRepositoryImpl`
-- <a href="http://javarticles.com/2013/12/spring-profiles.html">Spring Profiles</a>
-- <a href="https://www.javacodegeeks.com/2013/10/spring-4-conditional.html">Spring 4 Conditional</a>. Зайдите в исходники `@Profile` и посмотрите его  реализацию через `@Conditional`.
-- `Profiles.ACTIVE_DB` и `Profiles.DB_IMPLEMENTATION` задают конкретные профили при запуске приложения или запуске тестов.
-- Бины Spring мы разделяем по разным профилям с помощью `beans profile` в xml конфигурации и `@Profile / @ProfileCondition`. 
+
+- <a href="http://javarticles.com/2013/12/spring-profiles.html">Spring Profiles</a>. <a href="https://www.javacodegeeks.com/2013/10/spring-4-conditional.html">Spring 4 Conditional</a>. 
+- Зайдите в исходники `@Profile` и посмотрите его  реализацию через `@Conditional(ProfileCondition.class)`.
+- `Profiles.ACTIVE_DB` и `Profiles.DB_IMPLEMENTATION` задают конкретные профили при запуске приложения или запуске тестов. Бины Spring мы разделяем по разным профилям с помощью `beans profile` в xml конфигурации и `@Profile`. 
  
 #### Apply 5-HW5-optional-fetch-join.patch
 
@@ -92,6 +92,7 @@
 ### ![video](https://cloud.githubusercontent.com/assets/13649199/13672715/06dbc6ce-e6e7-11e5-81a9-04fbddb9e488.png) 8. <a href="https://drive.google.com/open?id=0B9Ye2auQ_NsFQThUX2VyQXNiTHM">Spring Web MVC</a>
 #### Apply 10-spring-webmvc.patch
 > Починил <a href="http://stackoverflow.com/questions/10327390/how-should-i-get-root-folder-path-in-jsp-page"> путь к корню</a>
+
 -  <a class="anchor" id="mvc"></a><a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/html/mvc.html">Spring Web MVC</a>
 -  <a href="http://design-pattern.ru/patterns/front-controller.html">Паттерн Front Controller</a>
 -  Добавляем DispatcherServlet и MVC application context.
