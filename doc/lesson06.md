@@ -209,4 +209,6 @@ _ru.javawebinar.topjava.model.User_ - имя региона, которое ис
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 ```
+- если не поднимается контекст Spring, смотрим верх самого нижнего эксепшена - там написано какого бина у вас нет в контексте.
+Его нужно включить в контекст, например, если не резолвит контроллер, посмотреть, если ли у вас в контексте spring-mvc.xml
 - Если неправильно формируется url относительно контекста приложения, посмотрите http://stackoverflow.com/questions/4764405/how-to-use-relative-paths-without-including-the-context-root-name
