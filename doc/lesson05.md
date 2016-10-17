@@ -97,7 +97,7 @@
 #### Apply 6-spring-cache.patch
 -  <a href="http://habrahabr.ru/post/113945/">Кеширование в Spring Framework</a>
 -  <a href="http://www.ehcache.org/">EHCACHE</a>
--  В случае проблем с размещением кэш в `java.io.tmpdir`: http://stackoverflow.com/questions/1924136/environment-variable-to-control-java-io-tmpdir
+-  В случае проблем с размещением кэш в `java.io.tmpdir` (нет доступа) смотри http://stackoverflow.com/questions/1924136/environment-variable-to-control-java-io-tmpdir
 -  Ресурсы:
    -  <a href="http://docs.spring.io/spring-framework/docs/current/spring-framework-reference/html/cache.html">Spring cache Abstraction</a>
    -  <a href="http://habrahabr.ru/post/25140/">Распределённая система кеша ehcache</a>
