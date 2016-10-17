@@ -60,7 +60,8 @@
 ### ![video](https://cloud.githubusercontent.com/assets/13649199/13672715/06dbc6ce-e6e7-11e5-81a9-04fbddb9e488.png) 4.  <a href="https://drive.google.com/open?id=0B9Ye2auQ_NsFVE1jWkRucm1UTjA">Spring Web</a>
 #### Apply 7-spring-web.patch
 
-> Для сборки проекта в окне Maven отключите тесты (`Toggele 'Skip Tests' Mode`)
+> - Для сборки проекта в окне Maven отключите тесты (`Toggele 'Skip Tests' Mode`)
+> - В `pom.xml` добавляеются профили запуска по умолчанию: `<param-value>postgres,datajpa</param-value>`. Если запускаетесь под HSQLDB - надо поменять.
 
 -  Добавляем в проект веб зависимости
 -  Поднятие контекста Spring в веб приложении. <a href="http://www.mkyong.com/servlet/what-is-listener-servletcontextlistener-example/">ServletContextListener</a>. Задание дефолтного профиля.
@@ -79,6 +80,7 @@
 ### ![video](https://cloud.githubusercontent.com/assets/13649199/13672715/06dbc6ce-e6e7-11e5-81a9-04fbddb9e488.png) 7.   <a href="https://drive.google.com/open?id=0B9Ye2auQ_NsFdkFRRFdYa0NoWkU">Конфигурирование Tomcat через maven plugin. Jndi-lookup.</a>
 > - `javax.el-api` scope изменил на `provided` (`el-api.jar` является частью Tomcat)
 > - Для запуска в Tomcat 8 поменял `tomcat7-maven-plugin` на `cargo-maven2-plugin`
+> - `cargo` плагин сконфигурирован под postgres. Для HSQLDB нужно скорректировать `dependencies` и `driverClassName` в `context.xml`.
 
 Запуск из коммандной строки (`clean` нужен для удаления из сборки зависимости `javax.el-api`):
 
@@ -210,5 +212,6 @@ _ru.javawebinar.topjava.model.User_ - имя региона, которое ис
     </filter-mapping>
 ```
 - если не поднимается контекст Spring, смотрим верх самого нижнего эксепшена - там написано какого бина у вас нет в контексте.
-Его нужно включить в контекст, например, если не резолвит контроллер, посмотреть, если ли у вас в контексте spring-mvc.xml
+Его нужно включить в контекст, например, если не резолвится контроллер, посмотреть, если ли у вас в контексте `spring-mvc.xml`
 - Если неправильно формируется url относительно контекста приложения, посмотрите http://stackoverflow.com/questions/4764405/how-to-use-relative-paths-without-including-the-context-root-name
+- При проблемах с запуском томкат проверьте запущенные `java` процессы, нет ли в `TOMCAT_HOME\webapps` приложения каталога `topjava`, логи tomcat - нет ли проблем с доступом к каталогам или контекстом Spring.
