@@ -184,7 +184,7 @@ _ru.javawebinar.topjava.model.User_ - имя региона, которое ис
 ## ![hw](https://cloud.githubusercontent.com/assets/13649199/13672719/09593080-e6e7-11e5-81d1-5cb629c438ca.png) Домашнее задание HW06
 - 1.1 Починить InMemory и Jdbc тесты
 - 1.2 Починить работу meals: перенести функциональность `MealServlet` в контроллеры (сервлеты удалить)
-  - 1.2.1 разнести запросы на update/delete/.. по разным методам. Можно по аналогии с `RootController#setUser` принимать `HttpServletRequest request` (аннотации на параметры и адаптеры для `LocalDate\Time` мы введем позже).
+  - 1.2.1 разнести запросы на update/delete/.. по разным методам (попробуйте вообще без `action`). Можно по аналогии с `RootController#setUser` принимать `HttpServletRequest request` (аннотации на параметры и адаптеры для `LocalDate\Time` мы введем позже).
   - 1.2.3 Добавить локализацию и `jsp:include` в meal/meals.jsp
 
 #### Optional
