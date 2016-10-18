@@ -222,3 +222,4 @@ _ru.javawebinar.topjava.model.User_ - имя региона, которое ис
 Его нужно включить в контекст, например, если не резолвится контроллер, посмотреть, если ли у вас в контексте `spring-mvc.xml`
 - Если неправильно формируется url относительно контекста приложения, посмотрите http://stackoverflow.com/questions/4764405/how-to-use-relative-paths-without-including-the-context-root-name
 - При проблемах с запуском томкат проверьте запущенные `java` процессы, нет ли в `TOMCAT_HOME\webapps` приложения каталога `topjava`, логи tomcat - нет ли проблем с доступом к каталогам или контекстом Spring.
+- Если создаете List с одним значением или Map с одним ключом-значением, пользуйтесь `Collections.singleton..`
