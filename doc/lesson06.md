@@ -194,7 +194,7 @@ _ru.javawebinar.topjava.model.User_ - имя региона, которое ис
    - <a href="https://docs.oracle.com/javaee/7/tutorial/persistence-entitygraphs002.htm">Using Named Entity Graphs</a>
    - <a href="https://jira.spring.io/browse/DATAJPA-792">@EntityGraph doesn't work if mix graph levels</a>
 - 2.2 Добавить транзакционность (`DataSourceTransactionManager`) в Jdbc реализации  
-- 2.3 Починить тесты в `JdbcUserRepositoryImpl` (добавить роли)
+- 2.3 Починить тесты в `JdbcUserRepositoryImpl` (добавить роли). В реализации `getAll` НЕ делать запрос ролей для каждого юзера
 
 ---------------------
 ## ![error](https://cloud.githubusercontent.com/assets/13649199/13672935/ef09ec1e-e6e7-11e5-9f79-d1641c05cbe6.png) Подсказки по HW06
