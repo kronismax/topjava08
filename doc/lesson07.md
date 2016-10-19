@@ -27,11 +27,10 @@
 
 > Еще интересные jdbc реализации:
 > - в `getAll()` делать запрос с `LEFT JOIN` и `ResultSetExtractor`  
-> - доставать агрегированные роли 
+> - доставать агрегированные роли и делать им `split(",")`:
 ```
 SELECT u.*, string_agg(ur.role, ',') AS roles FROM users u JOIN user_roles ur ... GROUP BY u.id
 ```
-и делать им `split(",")
 
 ## Занятие 7:
 ### ![video](https://cloud.githubusercontent.com/assets/13649199/13672715/06dbc6ce-e6e7-11e5-81a9-04fbddb9e488.png) 3. <a href="https://drive.google.com/open?id=0B9Ye2auQ_NsFTEtkSldKUnE4VkE">Auto generate DDL.</a>
