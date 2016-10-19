@@ -126,6 +126,7 @@
    - <a href="https://dzone.com/refcardz/getting-started-with-jpa">Getting Started with JPA</a>
    - <a href="http://stackoverflow.com/questions/8994864/how-would-i-specify-a-hibernate-pattern-annotation-using-a-regular-expression">Validate by RegExp</a>
    - <a href="http://en.wikibooks.org/wiki/Java_Persistence">Java Persistence</a>
+   - <a href="https://easyjava.ru/category/data/jpa/">Разделы по Java Persistence API</a>
    - <a href="http://hibernate.org/">Hibernate</a>
    - <a href="http://docs.spring.io/spring-framework/docs/4.0.x/spring-framework-reference/html/transaction.html">Spring Framework transaction management</a>
    - <a href="http://www.objectdb.com/java/jpa/persistence/managed#Entity_Object_Life_Cycle">Working with JPA Entity Objects</a>
