@@ -183,7 +183,7 @@ _ru.javawebinar.topjava.model.User_ - имя региона, которое ис
 
 В pom.xml мы подключаем servlet-api версии 3.1 со `scope=provided`, что означает что он используется только для компиляции и не идет в war. Тк мы не используем никаких фич 3.1, то наш код совместим с Tomcat 7.x. При запуске через `cargo-maven2-plugin` Tomcat 8 загружается из maven репозитория.
 
-> Откуда @Transactional вытягивает класс для работы с транзакцией, он в составе какого бина идет?
+> Откуда @Transactional вытягивает класс для работы с транзакцией, в составе какого бина он идет?
 
 1. Если в контексте Spring есть `<tx:annotation-driven/>`, то подключается `BeanPostProcessors`, который проксирует классы (и методы), помеченные `@Transactional`.
 2. По умолчанию для TransactionManager используется бин с `id=transactionManager`
