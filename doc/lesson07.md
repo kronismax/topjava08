@@ -9,6 +9,7 @@
 #### Apply 02-HW6-jsp-i18n.patch
 > локализовал весь контент
    -  <a href="http://stackoverflow.com/questions/10327390/how-should-i-get-root-folder-path-in-jsp-page">Root path in JSP</a>
+   
 #### Apply 03-HW6-meals.patch
 #### Apply 04-HW6-fix-relative-url-utf8.patch
    -  <a href="http://stackoverflow.com/questions/4764405/how-to-use-relative-paths-without-including-the-context-root-name">Relative paths in JSP</a>
@@ -26,7 +27,11 @@
 
 > Еще интересные jdbc реализации:
 > - в `getAll()` делать запрос с `LEFT JOIN` и `ResultSetExtractor`  
-> - доставать агрегированные роли `SELECT u.*, string_agg(ur.role, ',') AS roles FROM users u JOIN user_roles ur ... GROUP BY u.id` и делать им `split(",")`
+> - доставать агрегированные роли 
+```
+SELECT u.*, string_agg(ur.role, ',') AS roles FROM users u JOIN user_roles ur ... GROUP BY u.id
+```
+и делать им `split(",")
 
 ## Занятие 7:
 ### ![video](https://cloud.githubusercontent.com/assets/13649199/13672715/06dbc6ce-e6e7-11e5-81a9-04fbddb9e488.png) 3. <a href="https://drive.google.com/open?id=0B9Ye2auQ_NsFTEtkSldKUnE4VkE">Auto generate DDL.</a>
@@ -64,9 +69,11 @@
 #### Apply 11-jackson-hibernate.patch
 -  <a href="https://www.sghill.net/how-do-i-write-a-jackson-json-serializer-deserializer.html">Jackson JSON Serializer & Deserializer</a>
 -  Сериализация hibernate lazy-loading с помощью <a href="https://github.com/FasterXML/jackson-datatype-hibernate">jackson-datatype-hibernate</a>
+
 #### Apply 12-jackson-jsr310.patch
 >  Переводим сериализацию-десериализацию LocalDateTime на jsr310 и стандартный формат ISO-8601
 -  <a href="http://stackoverflow.com/questions/28802544/java-8-localdate-jackson-format#28803634">jackson-datatype-jsr310</a>
+
 #### Apply 13-test-with-matcher.patch
 -  <a href="http://habrahabr.ru/post/259055/">Тестируем Spring Rest контроллеры</a>: проверка JSON-содержимого ответа через собственный ResultMatcher
 
