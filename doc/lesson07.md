@@ -8,7 +8,8 @@
 #### Apply 01-HW6-fix-tests.patch
 #### Apply 02-HW6-jsp-i18n.patch
 > локализовал весь контент
-   -  <a href="http://stackoverflow.com/questions/10327390/how-should-i-get-root-folder-path-in-jsp-page">Root path in JSP</a>
+
+-  <a href="http://stackoverflow.com/questions/10327390/how-should-i-get-root-folder-path-in-jsp-page">Root path in JSP</a>
    
 #### Apply 03-HW6-meals.patch
 #### Apply 04-HW6-fix-relative-url-utf8.patch
@@ -39,9 +40,8 @@ SELECT u.*, string_agg(ur.role, ',') AS roles FROM users u JOIN user_roles ur ..
 ### ![video](https://cloud.githubusercontent.com/assets/13649199/13672715/06dbc6ce-e6e7-11e5-81a9-04fbddb9e488.png) 4. <a href="https://drive.google.com/open?id=0B9Ye2auQ_NsFQXhBN1pqa3FyOUE">Тестирование Spring MVC</a>
 #### Apply 08-controller-test.patch
 
-> В MockMvc добавился CharacterEncodingFilter
-
-> Закомментировали генерацию DDL 
+> - В `MockMvc` добавился `CharacterEncodingFilter`
+> - Закомментировали генерацию DDL 
 
 -  <a href="http://hamcrest.org/JavaHamcrest/">Hamcrest</a>
 -  <a href="http://www.petrikainulainen.net/programming/spring-framework/unit-testing-of-spring-mvc-controllers-normal-controllers/">Unit Testing of Spring MVC Controllers</a>
@@ -71,6 +71,7 @@ SELECT u.*, string_agg(ur.role, ',') AS roles FROM users u JOIN user_roles ur ..
 
 #### Apply 12-jackson-jsr310.patch
 >  Переводим сериализацию-десериализацию LocalDateTime на jsr310 и стандартный формат ISO-8601
+
 -  <a href="http://stackoverflow.com/questions/28802544/java-8-localdate-jackson-format#28803634">jackson-datatype-jsr310</a>
 
 #### Apply 13-test-with-matcher.patch
