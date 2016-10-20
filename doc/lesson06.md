@@ -201,6 +201,9 @@ _ru.javawebinar.topjava.model.User_ - имя региона, которое ис
    - <a href="http://www.thoughts-on-java.org/5-ways-to-initialize-lazy-relations-and-when-to-use-them/">5 ways to initialize lazy relationsships</a>
    - <a href="https://docs.oracle.com/javaee/7/tutorial/persistence-entitygraphs002.htm">Using Named Entity Graphs</a>
    - <a href="https://jira.spring.io/browse/DATAJPA-792">@EntityGraph doesn't work if mix graph levels</a>
+   - <a href="https://dou.ua/lenta/articles/jpa-fetch-types/">Стратегии загрузки коллекций в JPA</a>
+   - <a href="https://dou.ua/lenta/articles/hibernate-fetch-types/">Стратегии загрузки коллекций в Hibernate</a>
+   
 - 2.2 Добавить транзакционность (`DataSourceTransactionManager`) в Jdbc реализации  
 - 2.3 Починить тесты в `JdbcUserRepositoryImpl` (добавить роли). 
   - 2.3.1 В реализации `getAll` НЕ делать запрос ролей для каждого юзера
