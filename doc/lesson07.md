@@ -134,7 +134,7 @@ hamcrest-all используется в проверках `RootControllerTest`
   - в параметрах `getBetween` принимать `LocalDateTime` (конвертировать через Spring, <a href="http://blog.codeleak.pl/2014/06/spring-4-datetimeformat-with-java-8.html">@DATETIMEFORMAT WITH JAVA 8 DATE-TIME API</a>), а передавать в тестах в формате `ISO_LOCAL_DATE_TIME` (например `'2011-12-03T10:15:30'`).
 
 #### Optional
-- Заменить `@DATETIMEFORMAT` на свой LocalDateTime конвертор или форматтер.
+- Заменить `@DateTimeFormat` на свой LocalDateTime конвертор или форматтер.
 - Протестировать `MealRestController` через любой инструмент (SoapUi, curl, IDEA Test RESTful Web Service, Postman)
   -  <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/html/mvc.html#mvc-config-conversion">Кастомный Spring конвертор</a>
   -  <a href="http://stackoverflow.com/questions/13048368/difference-between-spring-mvc-formatters-and-converters">Difference between Spring MVC formatters and converters</a>
