@@ -7,15 +7,16 @@
 
 ### ![error](https://cloud.githubusercontent.com/assets/13649199/13672935/ef09ec1e-e6e7-11e5-9f79-d1641c05cbe6.png) Правка и миграция
 #### Apply 0-refactoring-fix
-- Заменил `@RequestMapping` на заданный `@..Mapping`
+- Заменил `@RequestMapping` на специфичный `@..Mapping`
 - Вместо `resetParam` (помещение параметров фильтрации в аттрибуты запроса для отображения в `meals.jsp`), достаю их в jsp напрямую из запроса через `${param.xxx}`
 - Упростил задание Base URI: <a href="http://stackoverflow.com/a/40228804/548473">`<base href="${pageContext.request.contextPath}/"/>`</a> 
-- Зделал в `ModelMatcher` удобные статические методы инициализации
+- Сделал в `ModelMatcher` удобные статические методы инициализации
 - Исправил пакет `RootControllerTest`
 
 ## ![hw](https://cloud.githubusercontent.com/assets/13649199/13672719/09593080-e6e7-11e5-81d1-5cb629c438ca.png) Разбор домашнего задания HW7
 
 ### ![video](https://cloud.githubusercontent.com/assets/13649199/13672715/06dbc6ce-e6e7-11e5-81a9-04fbddb9e488.png) 1. <a href="https://drive.google.com/open?id=0B9Ye2auQ_NsFblNtbEdHbldtNE0">HW7</a>
+
 #### Apply 1-HW07-controller-test.patch
 #### Apply 2-HW07-rest-controller.patch
 
@@ -36,7 +37,6 @@
 
 > УБРАЛ из проекта <a href="http://dandelion.github.io">Dandelion обертку к datatables</a>:
 >  -  не встречал нигде, кроме Spring Pet Clinic;
->  -  привязан к старому (legacy) API datatables;
 >  -  поддержка работы с datatables через Dandelion оказалось гораздо более трудоемкое, чем работа с плагином напрямую.
 
 -  Подключение веб ресурсов. <a href="http://www.webjars.org/">WebJars</a>.
@@ -144,7 +144,7 @@ Maven скачивает все депенденси в local repository, кот
 #### Optional.
 - Перевести работу фильтра на AJAX (при обновлении данных таблицы учитывать поля формы фильтрации). Попробуйте после модификации таблицы (например добавлении записи) обновлять ее также с учетом фильтра.
 - Избавиться от дублирования `id="${user.id}"` в строках таблиц users и meals (переместить аттрибут `id` в `tr` или сделать вызов функций через `onclick`)
-- Реализовать enable/disable User через checkbox в `userList.jsp` с сохранением в DB
+- Реализовать enable/disable User через checkbox в `users.jsp` с сохранением в DB
 - Перейти на новый dataTables API
   - <a href="https://datatables.net/upgrade/1.10-convert">Converting parameter names for 1.10</a>
   - <a href="http://stackoverflow.com/questions/25207147/datatable-vs-datatable-why-is-there-a-difference-and-how-do-i-make-them-w">dataTable() vs. DataTable()</a>
