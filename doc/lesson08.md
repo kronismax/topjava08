@@ -135,6 +135,11 @@ Maven скачивает все депенденси в local repository, кот
 
 На продакшене под нагрузкой статические ресурсы лучше всего держать не в war, а снаружи. Доступ к ним делается либо через <a href="http://www.moreofless.co.uk/static-content-web-pages-images-tomcat-outside-war/">конфигурирование Tomcat</a>, но чаще всего через прокси, например <a href="https://nginx.org/ru/">Nginx</a>
 
+> Как по REST определяется залогиненный юзер? Аутентификация происходит при каждом запросе?
+
+Нашел разные способы <a href="http://stackoverflow.com/questions/319530/restful-authentication">RESTful Authentication</a>.
+Мы будем использовать 2: coockie + http session (на след. уроке) и Basic Authentication с аутентификацией при каждом запросе.
+
 ## ![hw](https://cloud.githubusercontent.com/assets/13649199/13672719/09593080-e6e7-11e5-81d1-5cb629c438ca.png) Домашнее задание HW08
 
 - Перевести `meals` на `datatables` (`meals.jsp`, `MealAjaxController`).
