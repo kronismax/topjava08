@@ -137,7 +137,7 @@ Maven скачивает все депенденси в local repository, кот
 
 > Как по REST определяется залогиненный юзер? Аутентификация происходит при каждом запросе?
 
-Нашел разные способы <a href="http://stackoverflow.com/questions/319530/restful-authentication">RESTful Authentication</a>.
+<a href="http://stackoverflow.com/questions/319530/restful-authentication">Способы RESTful Authentication</a>.
 Мы будем использовать 2: coockie + http session (на след. уроке) и Basic Authentication с аутентификацией при каждом запросе.
 
 ## ![hw](https://cloud.githubusercontent.com/assets/13649199/13672719/09593080-e6e7-11e5-81d1-5cb629c438ca.png) Домашнее задание HW08
