@@ -153,3 +153,7 @@ Maven скачивает все депенденси в local repository, кот
 - Перейти на новый dataTables API
   - <a href="https://datatables.net/upgrade/1.10-convert">Converting parameter names for 1.10</a>
   - <a href="http://stackoverflow.com/questions/25207147/datatable-vs-datatable-why-is-there-a-difference-and-how-do-i-make-them-w">dataTable() vs. DataTable()</a>
+
+---------------------
+## ![error](https://cloud.githubusercontent.com/assets/13649199/13672935/ef09ec1e-e6e7-11e5-9f79-d1641c05cbe6.png) Подсказки по HW08
+- проверьте, как у вас первоначально (или по F5) отображаются неактивные пользователями (если меняете css)
