@@ -149,7 +149,7 @@ Maven скачивает все депенденси в local repository, кот
 #### Optional.
 - Перевести работу фильтра на AJAX (при обновлении данных таблицы учитывать поля формы фильтрации). Попробуйте после модификации таблицы (например добавлении записи) обновлять ее также с учетом фильтра.
 - Избавиться от дублирования `id="${user.id}"` в строках таблиц users и meals (переместить аттрибут `id` в `tr` или сделать вызов функций через `onclick`)
-- Реализовать enable/disable User через checkbox в `users.jsp` с сохранением в DB
+- Реализовать enable/disable User через checkbox в `users.jsp` с сохранением в DB. Неактивных пользователей выделить css стилем.
 - Перейти на новый dataTables API
   - <a href="https://datatables.net/upgrade/1.10-convert">Converting parameter names for 1.10</a>
   - <a href="http://stackoverflow.com/questions/25207147/datatable-vs-datatable-why-is-there-a-difference-and-how-do-i-make-them-w">dataTable() vs. DataTable()</a>
