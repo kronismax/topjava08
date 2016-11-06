@@ -112,6 +112,12 @@
 -  <a href="http://stackoverflow.com/questions/595872/under-what-conditions-is-a-jsessionid-created">Under what conditions is a JSESSIONID created?</a>
 -  <a href="http://halyph.blogspot.ru/2014/08/how-to-disable-tomcat-session.html">Tomcat Session Serialization</a>
 
+## ![question](https://cloud.githubusercontent.com/assets/13649199/13672858/9cd58692-e6e7-11e5-905d-c295d2a456f1.png) Ваши вопросы
+
+>  В куки попадает обычная строка JSESSIONID. Куда сериалиуется обьект User?
+
+Для хранения сосотяния сессии (например корзины покупателя) в Servlet API есть механизм хранения объектов сессии (грубо- мультимапмапа, которая достается из хранилища по ключу). При создании сессии на стороне сервера (через `request.getSession`) создается кука `JSESSIONID`, которая пеердается между клиентом и сервером и является ключом в хранилище объектов сессий. См. <a href="http://javatutor.net/books/tiej/servlets#_Toc39472971">Класс Session</a>
+
 ## ![hw](https://cloud.githubusercontent.com/assets/13649199/13672719/09593080-e6e7-11e5-81d1-5cb629c438ca.png) Домашнее задание HW9
 
 - Реализовать для meal Binding/ Update/ Validation. Проверить работу при пустом значении Calories.
