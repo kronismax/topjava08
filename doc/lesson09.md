@@ -118,6 +118,14 @@
 
 Для хранения сосотяния сессии (например корзины покупателя) в Servlet API есть механизм хранения объектов сессии (грубо- мультимапмапа, которая достается из хранилища по ключу). При создании сессии на стороне сервера (через `request.getSession`) создается кука `JSESSIONID`, которая пеердается между клиентом и сервером и является ключом в хранилище объектов сессий. См. <a href="http://javatutor.net/books/tiej/servlets#_Toc39472970">обработка сессий с помощью сервлетов</a>
 
+> В `login.jsp` есть форма `&lt;form:form action="spring_security_check" ..&gt; Где такой url используется?
+
+Это стандартный url для авторизации в spring-security. Он его и обрабатывает.
+
+> Если не пользовать js, а писать UI на JSP, сообщения между ui и сервером будут в формате json? Это же будет JSON API?
+
+Есть данные, которые передаются между клиентом и сервером в формате json, есть стандартизированный формат url для ресурсов - <a href="https://ru.wikipedia.org/wiki/REST">архитектурный стиль REST</a>. И есть отрисовка UI: JSP, Javascript фреймворк, Thymleaf и пр. Не надо эти вещи путать. 
+
 ## ![hw](https://cloud.githubusercontent.com/assets/13649199/13672719/09593080-e6e7-11e5-81d1-5cb629c438ca.png) Домашнее задание HW9
 
 - Реализовать для meal Binding/ Update/ Validation. Проверить работу при пустом значении Calories.
@@ -127,9 +135,3 @@
 #### Optional
 - Подключить datetime-picker
   - <a href="http://xdsoft.net/jqplugins/datetimepicker/">DateTimePicker jQuery plugin</a>
-
-## ![question](https://cloud.githubusercontent.com/assets/13649199/13672858/9cd58692-e6e7-11e5-905d-c295d2a456f1.png) Ваши вопросы
-
-> В `login.jsp` есть форма `&lt;form:form action="spring_security_check" ..&gt; Где такой url используется?
-
-Это стандартный url для авторизации в spring-security. Он его и обрабатывает.
