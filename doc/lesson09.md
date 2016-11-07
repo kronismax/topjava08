@@ -128,7 +128,7 @@
 
 > По умолчанию спринг работает с `UserDetailsService`, который должен возвращать `UserDetails`. Но мы не хотим стандартные, мы хотим свои, поэтому просто наследуем наши `UserServiceImpl` и `AuthorizedUser` от соответствующих интерфейсов и реализуем недостающие методы, которые spring security и будет использовать?
 
-`UserDetailsService`- это интерфейс, у которого есть стандартные реализации. Реализация конфигурится в `spring-security.xml` `authentication-manager` и должна реализовывать этот интерфейс.
+Сервис аутентификации конфигурится в `spring-security.xml` `<authentication-manager>` и должен реализовывать интерфейс `UserDetailsService`. В spring-security есть его стандартные реализации, которые использовались до нашей кастомной `UserServiceImpl`, например `<jdbc-user-service` использует реализацию `JdbcUserDetailsManager`
 
 ## ![hw](https://cloud.githubusercontent.com/assets/13649199/13672719/09593080-e6e7-11e5-81d1-5cb629c438ca.png) Домашнее задание HW9
 
