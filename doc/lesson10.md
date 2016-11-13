@@ -79,6 +79,22 @@
     -  <a href="https://ru.wikipedia.org/wiki/Правило_ограничения_домена">Правило ограничения домена (SOP)</a>
     -  <a href="https://ru.wikipedia.org/wiki/Cross-origin_resource_sharing">Cross-origin resource sharing (CORS)</a>
 
+## ![question](https://cloud.githubusercontent.com/assets/13649199/13672858/9cd58692-e6e7-11e5-905d-c295d2a456f1.png) Ваши вопросы
+
+> В чем отличие между аннотоацией `@PreAuthorize("hasRole('ROLE_ADMIN')")` и конфигурацией в jsp: `<sec:authorize access="isAuthenticated()">`, `<sec:authorize access="hasRole('ROLE_ADMIN')">` ?
+
+Анотация `@PreAuthorize` обрабатывается Spring анологично `@Transactional`, `@Cacheable` - класс проксируется и до-после вызова метода добавляется функциональность.
+В данном случае перед вызовом метода проверяются роль залогиненного юзера. JSTL тэг `authorize` выполняет проверку условия в залогиненном юзере внутри jsp.
+
+> Какой из `SessionLocaleResolver` и `CookieLocaleResolver` а какой лучше использовать для локализации?
+
+Я взял `CookieLocaleResolver`. Он хранит информацию в куках, которые хранятся долго у клиента на компьютере. Локаль в сессии проподает вместе с логаутом.
+
+> Еще раз: почему не нужен csrf для REST и нельзя подделать JSON запрос с вредоносного сайта?
+
+Попробуйте выполнить ajax запрос из вашего приложения c url, у которого домен отличный от вашего (нарпимер `http://topjava.herokuapp.com/meals/ajax/admin/users/`+id). В консоли браузера будет `XMLHttpRequest cannot load`... - <a href="https://developer.chrome.com/extensions/xhr">нарушение same origin policy</a>. Формам можно делать submit (через action=..) на другой домен, но невозможно cделать Content-Type, отличный от <a href="http://htmlbook.ru/html/form/enctype">стндартных enctype</a> и методов <a href="http://htmlbook.ru/html/form/method">кроме get и post</a>. А при запросе get невозможно причитать через java script содержимое ответа. Таким образом `consumes = MediaType.APPLICATION_JSON_VALUE` в POST защищает приложение от CSRF.
+
+
 ## ![hw](https://cloud.githubusercontent.com/assets/13649199/13672719/09593080-e6e7-11e5-81d1-5cb629c438ca.png) Домашнее задание HW10
 - Сделать валидацию в AdminAjaxController/MealAjaxController через `ExceptionInfoHandler` (вернуть клиенту `ErrorInfo` и статус `HttpStatus.BAD_REQUEST`. Тип методов контроллеров можно вернуть обратно на `void`).
 - Сделать валидацию принимаемых json объектов в REST контроллерах через `ExceptionInfoHandler`
@@ -93,14 +109,3 @@
 - Сделать в приложении выбор локали (см. http://topjava.herokuapp.com/)
   -  <a href="http://www.mkyong.com/spring-mvc/spring-mvc-internationalization-example">Spring MVC internationalization sample</a>
   -  <a href="http://www.concretepage.com/spring-4/spring-4-mvc-internationalization-i18n-and-localization-l10n-annotation-example">Spring 4 MVC Internationalization</a>
-  
-## ![question](https://cloud.githubusercontent.com/assets/13649199/13672858/9cd58692-e6e7-11e5-905d-c295d2a456f1.png) Ваши вопросы
-
-> В чем отличие между аннотоацией `@PreAuthorize("hasRole('ROLE_ADMIN')")` и конфигурацией в jsp: `<sec:authorize access="isAuthenticated()">`, `<sec:authorize access="hasRole('ROLE_ADMIN')">` ?
-
-Анотация `@PreAuthorize` обрабатывается Spring анологично `@Transactional`, `@Cacheable` - класс проксируется и до-после вызова метода добавляется функциональность.
-В данном случае перед вызовом метода проверяются роль залогиненного юзера. JSTL тэг `authorize` выполняет проверку условия в залогиненном юзере внутри jsp.
-
-> Какой из `SessionLocaleResolver` и `CookieLocaleResolver` а какой лучше использовать для локализации?
-
-Я взял `CookieLocaleResolver`. Он хранит информацию в куках, которые хранятся долго у клиента на компьютере. Локаль в сессии проподает вместе с логаутом.
