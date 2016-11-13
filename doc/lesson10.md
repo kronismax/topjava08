@@ -92,7 +92,7 @@
 
 > Еще раз: почему не нужен csrf для REST и нельзя подделать JSON запрос с вредоносного сайта?
 
-Попробуйте выполнить ajax запрос из вашего приложения c url, у которого домен отличный от вашего (нарпимер `http://topjava.herokuapp.com/meals/ajax/admin/users/`+id). В консоли браузера будет `XMLHttpRequest cannot load`... - <a href="https://developer.chrome.com/extensions/xhr">нарушение same origin policy</a>. Формам можно делать submit (через action=..) на другой домен, но невозможно cделать Content-Type, отличный от <a href="http://htmlbook.ru/html/form/enctype">стндартных enctype</a> и методов <a href="http://htmlbook.ru/html/form/method">кроме get и post</a>. А при запросе get невозможно причитать содержимое ответа (все тот же SAM в javascript). Таким образом `consumes = MediaType.APPLICATION_JSON_VALUE` в POST защищает приложение от CSRF.
+Попробуйте выполнить ajax запрос из вашего приложения c url, у которого домен отличный от вашего (нарпимер "http://topjava.herokuapp.com/meals/ajax/admin/users/"+id). В консоли браузера будет `XMLHttpRequest cannot load`... - <a href="https://developer.chrome.com/extensions/xhr">нарушение same origin policy</a>. Формам можно делать submit (через action=..) на другой домен, но невозможно cделать Content-Type, отличный от <a href="http://htmlbook.ru/html/form/enctype">стндартных enctype</a> и методов <a href="http://htmlbook.ru/html/form/method">кроме get и post</a>. А при запросе get невозможно причитать содержимое ответа (все тот же SAM в javascript). Таким образом `consumes = MediaType.APPLICATION_JSON_VALUE` в POST защищает приложение от CSRF.
 
 
 ## ![hw](https://cloud.githubusercontent.com/assets/13649199/13672719/09593080-e6e7-11e5-81d1-5cb629c438ca.png) Домашнее задание HW10
