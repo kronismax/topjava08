@@ -96,7 +96,7 @@
 
 
 ## ![hw](https://cloud.githubusercontent.com/assets/13649199/13672719/09593080-e6e7-11e5-81d1-5cb629c438ca.png) Домашнее задание HW10
-- Сделать валидацию в AdminAjaxController/MealAjaxController через `ExceptionInfoHandler` (вернуть клиенту `ErrorInfo` и статус `HttpStatus.BAD_REQUEST`. Тип методов контроллеров можно вернуть обратно на `void`).
+- Сделать валидацию в AdminAjaxController/MealAjaxController через `ExceptionInfoHandler` (вернуть клиенту `ErrorInfo` и статус `HttpStatus.UNPROCESSABLE_ENTITY`. Тип методов контроллеров можно вернуть обратно на `void`).
 - Сделать валидацию принимаемых json объектов в REST контроллерах через `ExceptionInfoHandler`
   - <a href="https://dzone.com/articles/spring-31-valid-requestbody">@Valid @RequestBody + Error handling</a>
 - Сделать обработку ошибки при дублирования email ("User with this email already present in application") для: 
