@@ -109,3 +109,4 @@
 - Сделать в приложении выбор локали (см. http://topjava.herokuapp.com/)
   -  <a href="http://www.mkyong.com/spring-mvc/spring-mvc-internationalization-example">Spring MVC internationalization sample</a>
   -  <a href="http://www.concretepage.com/spring-4/spring-4-mvc-internationalization-i18n-and-localization-l10n-annotation-example">Spring 4 MVC Internationalization</a>
+  - <a href="https://www.petrikainulainen.net/programming/tips-and-tricks/preventing-i18n-process-of-spring-mvc-from-falling-back-to-system-locale/">Preventing from Falling Back to System Locale</a>
