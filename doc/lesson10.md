@@ -116,5 +116,5 @@
 - Не дублируйте обработку ошибок `BindingResult`: `result.getFieldErrors()..` Также можно не создавать собственные эксепшены, а ловить в `ExceptionInfoHandler` стандартные
 - Можно добавить тест в Rest контроллеры для невалидных данных
 - Не дублируйте код переключения локали на странице логина и в приложении
-- css обычно размещают вверху стариницы для правильной разметки, а js в конце, чтобы загрузка была быстрее
+- css обычно размещают вверху стариницы для правильной разметки, а js в конце, чтобы загрузка была быстрее. Более современный подход: <a href="http://stackoverflow.com/a/24070373/548473">async and defer attributes on scripts</a>
 - если не работает переключение локали проверьте <a href="https://www.petrikainulainen.net/programming/tips-and-tricks/preventing-i18n-process-of-spring-mvc-from-falling-back-to-system-locale/">Preventing from Falling Back to System Locale</a>
