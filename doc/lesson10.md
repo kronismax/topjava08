@@ -114,6 +114,6 @@
 -------
 
 ## ![error](https://cloud.githubusercontent.com/assets/13649199/13672935/ef09ec1e-e6e7-11e5-9f79-d1641c05cbe6.png) Проверка в HW10
-- Не дублируйте обработку ошибок `BindingResult`: `result.getFieldErrors()..` 
+- Не дублируйте обработку ошибок `BindingResult`: `result.getFieldErrors()..` Также можно не создавать собственные эксепшены, а ловить в `ExceptionInfoHandler` стандартные
 - Можно добавить тест в Rest контроллеры для невалидных данных
 - Не дублируйте код переключения локали на странице логина и в приложении
