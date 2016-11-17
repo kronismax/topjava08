@@ -96,6 +96,7 @@
 
 
 ## ![hw](https://cloud.githubusercontent.com/assets/13649199/13672719/09593080-e6e7-11e5-81d1-5cb629c438ca.png) Домашнее задание HW10
+- Починить UTF-8 в редактировании профиля и регистрации (если кодировка по умолчанию у вас не UTF-8). Подумайте, почему они поломались.
 - Сделать валидацию в AdminAjaxController/MealAjaxController через `ExceptionInfoHandler` (вернуть клиенту `ErrorInfo` и статус `HttpStatus.BAD_REQUEST`. Тип методов контроллеров можно вернуть обратно на `void`).
 - Сделать валидацию принимаемых json объектов в REST контроллерах через `ExceptionInfoHandler`
   - <a href="https://dzone.com/articles/spring-31-valid-requestbody">@Valid @RequestBody + Error handling</a>
@@ -104,8 +105,6 @@
   - добавления / редактирования пользователя в списке
     
 #### Optional
-
-- Починить UTF-8 в редактировании профиля и регистрации (если windows). Подумайте, почему они поломались.
 - Сделать в приложении выбор локали (см. http://topjava.herokuapp.com/)
   -  <a href="http://www.mkyong.com/spring-mvc/spring-mvc-internationalization-example">Spring MVC internationalization sample</a>
   -  <a href="http://www.concretepage.com/spring-4/spring-4-mvc-internationalization-i18n-and-localization-l10n-annotation-example">Spring 4 MVC Internationalization</a>
