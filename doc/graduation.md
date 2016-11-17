@@ -27,3 +27,12 @@ As a result, provide a link to github repository. It should contain the code, RE
 P.S.: Make sure everything works with latest version that is on github :)
 
 P.P.S.: Asume that your API will be used by a frontend developer to build frontend on top of that.
+
+-----------------------------
+### ![error](https://cloud.githubusercontent.com/assets/13649199/13672935/ef09ec1e-e6e7-11e5-9f79-d1641c05cbe6.png) Рекомендации
+- В проекте (и тестовом задании на работу) в отличии от нашего учебного topjava оставляйте только необходимый для работы приложения код, ничего лишнего:
+  - НЕ надо делать разные профили базы и работы с ней
+  - базу лучше взять без установки (H2 или HSQLDB)
+  - НЕ надо делать абстрактных контроллеров на всякий случай
+  - по возможности сделать JUnit тесты
+  - уделяйте внимание обработке ошибок
