@@ -1,0 +1,62 @@
+Index: src/main/java/ru/javawebinar/topjava/model/Meal.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/model/Meal.java	(revision a26bbdcc633e1d6ea26d00ae5e78e9cffe33734c)
++++ src/main/java/ru/javawebinar/topjava/model/Meal.java	(revision )
+@@ -13,8 +13,8 @@
+  * GKislin
+  * 11.01.2015.
+  */
++@SuppressWarnings("JpaQlInspection")
+ @NamedQueries({
+-        @NamedQuery(name = Meal.GET, query = "SELECT m FROM Meal m WHERE m.id=:id AND m.user.id=:userId"),
+         @NamedQuery(name = Meal.ALL_SORTED, query = "SELECT m FROM Meal m WHERE m.user.id=:userId ORDER BY m.dateTime DESC"),
+         @NamedQuery(name = Meal.DELETE, query = "DELETE FROM Meal m WHERE m.id=:id AND m.user.id=:userId"),
+         @NamedQuery(name = Meal.GET_BETWEEN, query = "SELECT m FROM Meal m " +
+Index: src/main/java/ru/javawebinar/topjava/repository/jpa/JpaMealRepositoryImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/repository/jpa/JpaMealRepositoryImpl.java	(revision a26bbdcc633e1d6ea26d00ae5e78e9cffe33734c)
++++ src/main/java/ru/javawebinar/topjava/repository/jpa/JpaMealRepositoryImpl.java	(revision )
+@@ -1,6 +1,5 @@
+ package ru.javawebinar.topjava.repository.jpa;
+ 
+-import org.springframework.dao.support.DataAccessUtils;
+ import org.springframework.stereotype.Repository;
+ import org.springframework.transaction.annotation.Transactional;
+ import ru.javawebinar.topjava.model.Meal;
+@@ -50,11 +49,8 @@
+ 
+     @Override
+     public Meal get(int id, int userId) {
+-        List<Meal> meals = em.createNamedQuery(Meal.GET, Meal.class)
+-                .setParameter("id", id)
+-                .setParameter("userId", userId)
+-                .getResultList();
+-        return DataAccessUtils.singleResult(meals);
++        Meal meal = em.find(Meal.class, id);
++        return meal != null && meal.getUser().getId() == userId ? meal : null;
+     }
+ 
+     @Override
+\ No newline at end of file
+Index: src/test/java/ru/javawebinar/topjava/repository/mock/InMemoryUserRepositoryImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/repository/mock/InMemoryUserRepositoryImpl.java	(revision a26bbdcc633e1d6ea26d00ae5e78e9cffe33734c)
++++ src/test/java/ru/javawebinar/topjava/repository/mock/InMemoryUserRepositoryImpl.java	(revision )
+@@ -26,7 +26,7 @@
+     private Map<Integer, User> repository = new ConcurrentHashMap<>();
+     private AtomicInteger counter = new AtomicInteger(0);
+ 
+-    private static final Comparator<User> USER_COMPARATOR = Comparator.comparing(User::getName);
++    private static final Comparator<User> USER_COMPARATOR = Comparator.comparing(User::getName).thenComparing(User::getEmail);
+ 
+     @Override
+     public User save(User user) {

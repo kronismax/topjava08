@@ -1,0 +1,419 @@
+Index: src/test/java/ru/javawebinar/topjava/web/user/ProfileRestControllerTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/web/user/ProfileRestControllerTest.java	(revision )
++++ src/test/java/ru/javawebinar/topjava/web/user/ProfileRestControllerTest.java	(revision )
+@@ -0,0 +1,47 @@
++package ru.javawebinar.topjava.web.user;
++
++import org.junit.Test;
++import org.springframework.http.MediaType;
++import ru.javawebinar.topjava.TestUtil;
++import ru.javawebinar.topjava.model.Role;
++import ru.javawebinar.topjava.model.User;
++import ru.javawebinar.topjava.web.AbstractControllerTest;
++import ru.javawebinar.topjava.web.json.JsonUtil;
++
++import java.util.Collections;
++
++import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
++import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
++import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
++import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
++import static ru.javawebinar.topjava.UserTestData.*;
++import static ru.javawebinar.topjava.web.user.ProfileRestController.REST_URL;
++
++public class ProfileRestControllerTest extends AbstractControllerTest {
++
++    @Test
++    public void testGet() throws Exception {
++        TestUtil.print(mockMvc.perform(get(REST_URL))
++                .andExpect(status().isOk())
++                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
++                .andExpect(MATCHER.contentMatcher(USER)));
++    }
++
++    @Test
++    public void testDelete() throws Exception {
++        mockMvc.perform(delete(REST_URL))
++                .andExpect(status().isOk());
++        MATCHER.assertCollectionEquals(Collections.singletonList(ADMIN), userService.getAll());
++    }
++
++    @Test
++    public void testUpdate() throws Exception {
++        User updated = new User(USER_ID, "newName", "newemail@ya.ru", "newPassword", Role.ROLE_USER);
++        mockMvc.perform(put(REST_URL).contentType(MediaType.APPLICATION_JSON)
++                .content(JsonUtil.writeValue(updated)))
++                .andDo(print())
++                .andExpect(status().isOk());
++
++        MATCHER.assertEquals(updated, new User(userService.getByEmail("newemail@ya.ru")));
++    }
++}
+\ No newline at end of file
+Index: src/test/java/ru/javawebinar/topjava/TestUtil.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/TestUtil.java	(revision )
++++ src/test/java/ru/javawebinar/topjava/TestUtil.java	(revision )
+@@ -0,0 +1,21 @@
++package ru.javawebinar.topjava;
++
++import org.springframework.test.web.servlet.ResultActions;
++
++import java.io.UnsupportedEncodingException;
++
++/**
++ * GKislin
++ * 05.01.2015.
++ */
++public class TestUtil {
++
++    public static ResultActions print(ResultActions action) throws UnsupportedEncodingException {
++        System.out.println(getContent(action));
++        return action;
++    }
++
++    public static String getContent(ResultActions action) throws UnsupportedEncodingException {
++        return action.andReturn().getResponse().getContentAsString();
++    }
++}
+Index: src/test/java/ru/javawebinar/topjava/matcher/TestMatcher.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/matcher/TestMatcher.java	(revision )
++++ src/test/java/ru/javawebinar/topjava/matcher/TestMatcher.java	(revision )
+@@ -0,0 +1,29 @@
++package ru.javawebinar.topjava.matcher;
++
++import org.hamcrest.BaseMatcher;
++import org.hamcrest.Description;
++import ru.javawebinar.topjava.web.json.JsonUtil;
++
++/**
++ * GKislin
++ * 05.01.2015.
++ */
++abstract public class TestMatcher<T> extends BaseMatcher<String> {
++    protected T expected;
++
++    public TestMatcher(T expected) {
++        this.expected = expected;
++    }
++
++    @Override
++    public boolean matches(Object actual) {
++        return compare(expected, (String) actual);
++    }
++
++    abstract protected boolean compare(T expected, String actual);
++
++    @Override
++    public void describeTo(Description description) {
++        description.appendText(JsonUtil.writeValue(expected));
++    }
++}
+Index: src/test/java/ru/javawebinar/topjava/web/AbstractControllerTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/web/AbstractControllerTest.java	(date 1476914752000)
++++ src/test/java/ru/javawebinar/topjava/web/AbstractControllerTest.java	(revision )
+@@ -12,6 +12,7 @@
+ import org.springframework.transaction.annotation.Transactional;
+ import org.springframework.web.context.WebApplicationContext;
+ import org.springframework.web.filter.CharacterEncodingFilter;
++import ru.javawebinar.topjava.repository.JpaUtil;
+ import ru.javawebinar.topjava.service.UserService;
+ 
+ import javax.annotation.PostConstruct;
+@@ -41,6 +42,9 @@
+         CHARACTER_ENCODING_FILTER.setForceEncoding(true);
+     }
+ 
++    @Autowired
++    private JpaUtil jpaUtil;
++
+     protected MockMvc mockMvc;
+ 
+     @Autowired
+@@ -60,5 +64,6 @@
+     @Before
+     public void setUp() {
+         userService.evictCache();
++        jpaUtil.clear2ndLevelHibernateCache();
+     }
+ }
+Index: src/test/java/ru/javawebinar/topjava/matcher/ModelMatcher.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/matcher/ModelMatcher.java	(date 1476914752000)
++++ src/test/java/ru/javawebinar/topjava/matcher/ModelMatcher.java	(revision )
+@@ -1,11 +1,19 @@
+ package ru.javawebinar.topjava.matcher;
+ 
+ import org.junit.Assert;
++import org.springframework.test.web.servlet.ResultActions;
++import org.springframework.test.web.servlet.ResultMatcher;
++import ru.javawebinar.topjava.TestUtil;
++import ru.javawebinar.topjava.web.json.JsonUtil;
+ 
++import java.io.UnsupportedEncodingException;
++import java.util.Arrays;
+ import java.util.Collection;
+ import java.util.List;
+ import java.util.stream.Collectors;
+ 
++import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
++
+ /**
+  * GKislin
+  * 06.01.2015.
+@@ -20,16 +28,18 @@
+             (Object expected, Object actual) -> expected == actual || String.valueOf(expected).equals(String.valueOf(actual));
+ 
+     private Comparator<T> comparator;
++    private Class<T> entityClass;
+ 
+     public interface Comparator<T> {
+         boolean compare(T expected, T actual);
+     }
+ 
+-    public ModelMatcher() {
+-        this((Comparator<T>) DEFAULT_COMPARATOR);
++    public ModelMatcher(Class<T> entityClass) {
++        this(entityClass, (Comparator<T>) DEFAULT_COMPARATOR);
+     }
+ 
+-    public ModelMatcher(Comparator<T> comparator) {
++    public ModelMatcher(Class<T> entityClass, Comparator<T> comparator) {
++        this.entityClass = entityClass;
+         this.comparator = comparator;
+     }
+ 
+@@ -54,6 +64,18 @@
+         }
+     }
+ 
++    private T fromJsonValue(String json) {
++        return JsonUtil.readValue(json, entityClass);
++    }
++
++    private Collection<T> fromJsonValues(String json) {
++        return JsonUtil.readValues(json, entityClass);
++    }
++
++    public T fromJsonAction(ResultActions action) throws UnsupportedEncodingException {
++        return fromJsonValue(TestUtil.getContent(action));
++    }
++
+     public void assertEquals(T expected, T actual) {
+         Assert.assertEquals(wrap(expected), wrap(actual));
+     }
+@@ -68,5 +90,33 @@
+ 
+     public List<Wrapper> wrap(Collection<T> collection) {
+         return collection.stream().map(this::wrap).collect(Collectors.toList());
++    }
++
++    public ResultMatcher contentMatcher(T expect) {
++        return content().string(
++                new TestMatcher<T>(expect) {
++                    @Override
++                    protected boolean compare(T expected, String body) {
++                        Wrapper expectedForCompare = wrap(expected);
++                        Wrapper actualForCompare = wrap(fromJsonValue(body));
++                        return expectedForCompare.equals(actualForCompare);
++                    }
++                });
++    }
++
++    public final ResultMatcher contentListMatcher(T... expected) {
++        return contentListMatcher(Arrays.asList(expected));
++    }
++
++    public final ResultMatcher contentListMatcher(List<T> expected) {
++        return content().string(
++                new TestMatcher<List<T>>(expected) {
++                    @Override
++                    protected boolean compare(List<T> expected, String actual) {
++                        List<Wrapper> expectedList = wrap(expected);
++                        List<Wrapper> actualList = wrap(fromJsonValues(actual));
++                        return expectedList.equals(actualList);
++                    }
++                });
+     }
+ }
+Index: src/test/java/ru/javawebinar/topjava/web/user/AdminRestControllerTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/web/user/AdminRestControllerTest.java	(date 1476914752000)
++++ src/test/java/ru/javawebinar/topjava/web/user/AdminRestControllerTest.java	(revision )
+@@ -2,17 +2,25 @@
+ 
+ import org.junit.Test;
+ import org.springframework.http.MediaType;
++import org.springframework.test.web.servlet.ResultActions;
++import ru.javawebinar.topjava.TestUtil;
++import ru.javawebinar.topjava.model.Role;
++import ru.javawebinar.topjava.model.User;
+ import ru.javawebinar.topjava.web.AbstractControllerTest;
++import ru.javawebinar.topjava.web.json.JsonUtil;
+ 
+-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
++import java.util.Arrays;
++import java.util.Collections;
++
++import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+-import static ru.javawebinar.topjava.UserTestData.ADMIN_ID;
++import static ru.javawebinar.topjava.UserTestData.*;
+ 
+ public class AdminRestControllerTest extends AbstractControllerTest {
+ 
+-    public static final String REST_URL = AdminRestController.REST_URL + '/';
++    private static final String REST_URL = AdminRestController.REST_URL + '/';
+ 
+     @Test
+     public void testGet() throws Exception {
+@@ -20,6 +28,58 @@
+                 .andExpect(status().isOk())
+                 .andDo(print())
+ // https://jira.spring.io/browse/SPR-14472
+-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
++                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
++                .andExpect(MATCHER.contentMatcher(ADMIN));
++    }
++
++    @Test
++    public void testGetByEmail() throws Exception {
++        mockMvc.perform(get(REST_URL + "by?email=" + USER.getEmail()))
++                .andExpect(status().isOk())
++                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
++                .andExpect(MATCHER.contentMatcher(USER));
++    }
++
++    @Test
++    public void testDelete() throws Exception {
++        mockMvc.perform(delete(REST_URL + USER_ID))
++                .andDo(print())
++                .andExpect(status().isOk());
++        MATCHER.assertCollectionEquals(Collections.singletonList(ADMIN), userService.getAll());
++    }
++
++    @Test
++    public void testUpdate() throws Exception {
++        User updated = new User(USER);
++        updated.setName("UpdatedName");
++        updated.setRoles(Collections.singletonList(Role.ROLE_ADMIN));
++        mockMvc.perform(put(REST_URL + USER_ID)
++                .contentType(MediaType.APPLICATION_JSON)
++                .content(JsonUtil.writeValue(updated)))
++                .andExpect(status().isOk());
++
++        MATCHER.assertEquals(updated, userService.get(USER_ID));
++    }
++
++    @Test
++    public void testCreate() throws Exception {
++        User expected = new User(null, "New", "new@gmail.com", "newPass", Role.ROLE_USER, Role.ROLE_ADMIN);
++        ResultActions action = mockMvc.perform(post(REST_URL)
++                .contentType(MediaType.APPLICATION_JSON)
++                .content(JsonUtil.writeValue(expected))).andExpect(status().isCreated());
++
++        User returned = MATCHER.fromJsonAction(action);
++        expected.setId(returned.getId());
++
++        MATCHER.assertEquals(expected, returned);
++        MATCHER.assertCollectionEquals(Arrays.asList(ADMIN, expected, USER), userService.getAll());
++    }
++
++    @Test
++    public void testGetAll() throws Exception {
++        TestUtil.print(mockMvc.perform(get(REST_URL))
++                .andExpect(status().isOk())
++                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
++                .andExpect(MATCHER.contentListMatcher(ADMIN, USER)));
+     }
+ }
+\ No newline at end of file
+Index: src/main/java/ru/javawebinar/topjava/model/User.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/model/User.java	(date 1476914752000)
++++ src/main/java/ru/javawebinar/topjava/model/User.java	(revision )
+@@ -6,6 +6,7 @@
+ import org.hibernate.validator.constraints.Email;
+ import org.hibernate.validator.constraints.Length;
+ import org.hibernate.validator.constraints.NotEmpty;
++import org.springframework.util.CollectionUtils;
+ import ru.javawebinar.topjava.util.MealsUtil;
+ 
+ import javax.persistence.*;
+@@ -83,7 +84,7 @@
+         this.password = password;
+         this.caloriesPerDay = caloriesPerDay;
+         this.enabled = enabled;
+-        this.roles = roles;
++        setRoles(roles);
+     }
+ 
+     public String getEmail() {
+@@ -127,7 +128,7 @@
+     }
+ 
+     public void setRoles(Collection<Role> roles) {
+-        this.roles = EnumSet.copyOf(roles);
++        this.roles = CollectionUtils.isEmpty(roles) ? Collections.emptySet() : EnumSet.copyOf(roles);
+     }
+ 
+     public String getPassword() {
+Index: src/test/java/ru/javawebinar/topjava/MealTestData.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/MealTestData.java	(date 1476914752000)
++++ src/test/java/ru/javawebinar/topjava/MealTestData.java	(revision )
+@@ -16,7 +16,7 @@
+  */
+ public class MealTestData {
+ 
+-    public static final ModelMatcher<Meal> MATCHER = new ModelMatcher<>();
++    public static final ModelMatcher<Meal> MATCHER = new ModelMatcher<>(Meal.class);
+ 
+     public static final int MEAL1_ID = START_SEQ + 2;
+     public static final int ADMIN_MEAL_ID = START_SEQ + 8;
+Index: src/test/java/ru/javawebinar/topjava/UserTestData.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/UserTestData.java	(date 1476914752000)
++++ src/test/java/ru/javawebinar/topjava/UserTestData.java	(revision )
+@@ -19,7 +19,7 @@
+     public static final User USER = new User(USER_ID, "User", "user@yandex.ru", "password", Role.ROLE_USER);
+     public static final User ADMIN = new User(ADMIN_ID, "Admin", "admin@gmail.com", "admin", Role.ROLE_ADMIN, Role.ROLE_USER);
+ 
+-    public static final ModelMatcher<User> MATCHER = new ModelMatcher<>(
++    public static final ModelMatcher<User> MATCHER = new ModelMatcher<>(User.class,
+             (expected, actual) -> expected == actual ||
+                     (Objects.equals(expected.getPassword(), actual.getPassword())
+                             && Objects.equals(expected.getId(), actual.getId())
+\ No newline at end of file

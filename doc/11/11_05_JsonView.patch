@@ -1,0 +1,84 @@
+Index: src/main/java/ru/javawebinar/topjava/View.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/View.java	(revision )
++++ src/main/java/ru/javawebinar/topjava/View.java	(revision )
+@@ -0,0 +1,10 @@
++package ru.javawebinar.topjava;
++
++/**
++ * gkislin
++ * 04.08.2016
++ */
++public class View {
++    public static class REST {}
++    public static class UI {}
++}
+Index: src/main/java/ru/javawebinar/topjava/web/user/AdminAjaxController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/web/user/AdminAjaxController.java	(date 1479306659000)
++++ src/main/java/ru/javawebinar/topjava/web/user/AdminAjaxController.java	(revision )
+@@ -1,5 +1,6 @@
+ package ru.javawebinar.topjava.web.user;
+ 
++import com.fasterxml.jackson.annotation.JsonView;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.context.MessageSource;
+ import org.springframework.context.i18n.LocaleContextHolder;
+@@ -7,6 +8,7 @@
+ import org.springframework.http.MediaType;
+ import org.springframework.web.bind.annotation.*;
+ import ru.javawebinar.topjava.model.User;
++import ru.javawebinar.topjava.View;
+ import ru.javawebinar.topjava.to.UserTo;
+ import ru.javawebinar.topjava.util.UserUtil;
+ 
+@@ -24,11 +26,13 @@
+     private MessageSource messageSource;
+ 
+     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
++    @JsonView(View.UI.class)
+     public List<User> getAll() {
+         return super.getAll();
+     }
+ 
+     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
++    @JsonView(View.UI.class)
+     public User get(@PathVariable("id") int id) {
+         return super.get(id);
+     }
+Index: src/main/java/ru/javawebinar/topjava/model/User.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/model/User.java	(date 1479306659000)
++++ src/main/java/ru/javawebinar/topjava/model/User.java	(revision )
+@@ -1,12 +1,14 @@
+ package ru.javawebinar.topjava.model;
+ 
+ import org.hibernate.annotations.BatchSize;
++import com.fasterxml.jackson.annotation.JsonView;
+ import org.hibernate.annotations.Cache;
+ import org.hibernate.annotations.CacheConcurrencyStrategy;
+ import org.hibernate.validator.constraints.Email;
+ import org.hibernate.validator.constraints.Length;
+ import org.hibernate.validator.constraints.NotEmpty;
+ import org.springframework.util.CollectionUtils;
++import ru.javawebinar.topjava.View;
+ import ru.javawebinar.topjava.util.UserUtil;
+ 
+ import javax.persistence.*;
+@@ -42,6 +44,7 @@
+     @Column(name = "password", nullable = false)
+     @NotEmpty
+     @Length(min = 5)
++    @JsonView(View.REST.class)
+     private String password;
+ 
+     @Column(name = "enabled", nullable = false)

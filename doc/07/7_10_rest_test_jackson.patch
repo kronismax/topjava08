@@ -1,0 +1,116 @@
+Index: src/test/java/ru/javawebinar/topjava/web/user/AdminRestControllerTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/web/user/AdminRestControllerTest.java	(revision )
++++ src/test/java/ru/javawebinar/topjava/web/user/AdminRestControllerTest.java	(revision )
+@@ -0,0 +1,25 @@
++package ru.javawebinar.topjava.web.user;
++
++import org.junit.Test;
++import org.springframework.http.MediaType;
++import ru.javawebinar.topjava.web.AbstractControllerTest;
++
++import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
++import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
++import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
++import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
++import static ru.javawebinar.topjava.UserTestData.ADMIN_ID;
++
++public class AdminRestControllerTest extends AbstractControllerTest {
++
++    public static final String REST_URL = AdminRestController.REST_URL + '/';
++
++    @Test
++    public void testGet() throws Exception {
++        mockMvc.perform(get(REST_URL + ADMIN_ID))
++                .andExpect(status().isOk())
++                .andDo(print())
++// https://jira.spring.io/browse/SPR-14472
++                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
++    }
++}
+\ No newline at end of file
+Index: pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- pom.xml	(date 1476913268000)
++++ pom.xml	(revision )
+@@ -19,6 +19,7 @@
+         <tomcat.version>8.0.33</tomcat.version>
+         <spring.version>4.3.2.RELEASE</spring.version>
+         <spring-data-jpa.version>1.10.4.RELEASE</spring-data-jpa.version>
++        <jackson-json.version>2.8.4</jackson-json.version>
+ 
+         <!-- Logging -->
+         <logback.version>1.1.7</logback.version>
+@@ -226,6 +227,13 @@
+             <groupId>javax.servlet</groupId>
+             <artifactId>jstl</artifactId>
+             <version>1.2</version>
++        </dependency>
++
++        <!--JSON-->
++        <dependency>
++            <groupId>com.fasterxml.jackson.core</groupId>
++            <artifactId>jackson-databind</artifactId>
++            <version>${jackson-json.version}</version>
+         </dependency>
+ 
+         <!--Test-->
+Index: src/main/java/ru/javawebinar/topjava/model/User.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/model/User.java	(date 1476913268000)
++++ src/main/java/ru/javawebinar/topjava/model/User.java	(revision )
+@@ -7,6 +7,7 @@
+ import org.hibernate.validator.constraints.Length;
+ import org.hibernate.validator.constraints.NotEmpty;
+ import ru.javawebinar.topjava.util.MealsUtil;
++import com.fasterxml.jackson.annotation.JsonIgnore;
+ 
+ import javax.persistence.*;
+ import javax.validation.constraints.Digits;
+@@ -63,6 +64,7 @@
+ 
+     @OneToMany(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY, mappedBy = "user")
+     @OrderBy("dateTime DESC")
++    @JsonIgnore
+     protected List<Meal> meals;
+ 
+     public User() {
+Index: src/main/java/ru/javawebinar/topjava/model/BaseEntity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/model/BaseEntity.java	(date 1476913268000)
++++ src/main/java/ru/javawebinar/topjava/model/BaseEntity.java	(revision )
+@@ -1,10 +1,14 @@
+ package ru.javawebinar.topjava.model;
+ 
++import com.fasterxml.jackson.annotation.JsonAutoDetect;
+ import org.hibernate.Hibernate;
+ import org.springframework.data.domain.Persistable;
+ 
+ import javax.persistence.*;
+ 
++import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
++import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
++
+ /**
+  * User: gkislin
+  * Date: 22.08.2014
+@@ -17,6 +21,7 @@
+ @MappedSuperclass
+ // http://stackoverflow.com/questions/594597/hibernate-annotations-which-is-better-field-or-property-access
+ @Access(AccessType.FIELD)
++@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, isGetterVisibility = NONE, setterVisibility = NONE)
+ public class BaseEntity implements Persistable<Integer> {
+     public static final int START_SEQ = 100000;
+ 

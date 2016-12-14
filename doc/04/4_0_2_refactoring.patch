@@ -1,0 +1,173 @@
+Index: src/main/java/ru/javawebinar/topjava/web/UserServlet.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/web/UserServlet.java	(date 1475106862000)
++++ src/main/java/ru/javawebinar/topjava/web/UserServlet.java	(revision )
+@@ -25,7 +25,7 @@
+     }
+ 
+     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+-        LOG.debug("forward to userList");
+-        request.getRequestDispatcher("/userList.jsp").forward(request, response);
++        LOG.debug("forward to users");
++        request.getRequestDispatcher("/users.jsp").forward(request, response);
+     }
+ }
+Index: src/main/webapp/mealEdit.jsp
+===================================================================
+--- src/main/webapp/mealEdit.jsp	(date 1475106862000)
++++ src/main/webapp/meal.jsp	(revision )
+@@ -1,0 +1,0 @@
+Index: src/test/java/ru/javawebinar/topjava/matcher/ModelMatcher.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/matcher/ModelMatcher.java	(date 1475106862000)
++++ src/test/java/ru/javawebinar/topjava/matcher/ModelMatcher.java	(revision )
+@@ -9,7 +9,7 @@
+ /**
+  * GKislin
+  * 06.01.2015.
+- *
++ * <p>
+  * This class wrap every entity by Wrapper before assertEquals in order to compare them by comparator
+  * Default comparator compare by String.valueOf(entity)
+  *
+@@ -21,7 +21,7 @@
+     }
+ 
+     private static final Comparator DEFAULT_COMPARATOR =
+-            (Object expected, Object actual) -> String.valueOf(expected).equals(String.valueOf(actual));
++            (Object expected, Object actual) -> expected == actual || String.valueOf(expected).equals(String.valueOf(actual));
+ 
+     private Comparator<T> comparator;
+ 
+Index: src/main/webapp/mealList.jsp
+===================================================================
+--- src/main/webapp/mealList.jsp	(date 1475106862000)
++++ src/main/webapp/meals.jsp	(revision )
+@@ -43,7 +43,7 @@
+             <th></th>
+         </tr>
+         </thead>
+-        <c:forEach items="${mealList}" var="meal">
++        <c:forEach items="${meals}" var="meal">
+             <jsp:useBean id="meal" scope="page" type="ru.javawebinar.topjava.to.MealWithExceed"/>
+             <tr class="${meal.exceed ? 'exceeded' : 'normal'}">
+                 <td>
+@@ -60,4 +60,4 @@
+     </table>
+ </section>
+ </body>
+-</html>
+\ No newline at end of file
++</html>
+Index: src/main/webapp/userList.jsp
+===================================================================
+--- src/main/webapp/userList.jsp	(date 1475106862000)
++++ src/main/webapp/users.jsp	(revision )
+@@ -1,0 +1,0 @@
+Index: src/test/java/ru/javawebinar/topjava/repository/mock/InMemoryMealRepositoryImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/repository/mock/InMemoryMealRepositoryImpl.java	(date 1475106862000)
++++ src/test/java/ru/javawebinar/topjava/repository/mock/InMemoryMealRepositoryImpl.java	(revision )
+@@ -8,10 +8,14 @@
+ 
+ import java.time.LocalDateTime;
+ import java.time.Month;
+-import java.util.*;
++import java.util.Collection;
++import java.util.Comparator;
++import java.util.Map;
++import java.util.Objects;
+ import java.util.concurrent.ConcurrentHashMap;
+ import java.util.concurrent.atomic.AtomicInteger;
+ import java.util.stream.Collectors;
++import java.util.stream.Stream;
+ 
+ import static ru.javawebinar.topjava.UserTestData.ADMIN_ID;
+ import static ru.javawebinar.topjava.UserTestData.USER_ID;
+@@ -66,19 +70,22 @@
+ 
+     @Override
+     public Collection<Meal> getAll(int userId) {
+-        Map<Integer, Meal> meals = repository.get(userId);
+-        return meals == null ?
+-                Collections.emptyList() :
+-                meals.values().stream().sorted(MEAL_COMPARATOR).collect(Collectors.toList());
++        return getAllStream(userId).collect(Collectors.toList());
+     }
+ 
+     @Override
+     public Collection<Meal> getBetween(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId) {
+         Objects.requireNonNull(startDateTime);
+         Objects.requireNonNull(endDateTime);
+-        return getAll(userId).stream()
++        return getAllStream(userId)
+                 .filter(um -> TimeUtil.isBetween(um.getDateTime(), startDateTime, endDateTime))
+                 .collect(Collectors.toList());
++    }
++
++    private Stream<Meal> getAllStream(int userId) {
++        Map<Integer, Meal> meals = repository.get(userId);
++        return meals == null ?
++                Stream.empty() : meals.values().stream().sorted(MEAL_COMPARATOR);
+     }
+ }
+ 
+Index: src/main/java/ru/javawebinar/topjava/web/MealServlet.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/web/MealServlet.java	(date 1475106862000)
++++ src/main/java/ru/javawebinar/topjava/web/MealServlet.java	(revision )
+@@ -17,6 +17,7 @@
+ import java.time.LocalDate;
+ import java.time.LocalDateTime;
+ import java.time.LocalTime;
++import java.time.temporal.ChronoUnit;
+ import java.util.Objects;
+ 
+ /**
+@@ -65,8 +66,8 @@
+             LocalDate endDate = TimeUtil.parseLocalDate(resetParam("endDate", request));
+             LocalTime startTime = TimeUtil.parseLocalTime(resetParam("startTime", request));
+             LocalTime endTime = TimeUtil.parseLocalTime(resetParam("endTime", request));
+-            request.setAttribute("mealList", mealController.getBetween(startDate, startTime, endDate, endTime));
+-            request.getRequestDispatcher("/mealList.jsp").forward(request, response);
++            request.setAttribute("meals", mealController.getBetween(startDate, startTime, endDate, endTime));
++            request.getRequestDispatcher("/meals.jsp").forward(request, response);
+         }
+     }
+ 
+@@ -81,8 +82,8 @@
+ 
+         if (action == null) {
+             LOG.info("getAll");
+-            request.setAttribute("mealList", mealController.getAll());
+-            request.getRequestDispatcher("/mealList.jsp").forward(request, response);
++            request.setAttribute("meals", mealController.getAll());
++            request.getRequestDispatcher("/meals.jsp").forward(request, response);
+ 
+         } else if ("delete".equals(action)) {
+             int id = getId(request);
+@@ -92,10 +93,10 @@
+ 
+         } else if ("create".equals(action) || "update".equals(action)) {
+             final Meal meal = action.equals("create") ?
+-                    new Meal(LocalDateTime.now().withNano(0).withSecond(0), "", 1000) :
++                    new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS), "", 1000) :
+                     mealController.get(getId(request));
+             request.setAttribute("meal", meal);
+-            request.getRequestDispatcher("mealEdit.jsp").forward(request, response);
++            request.getRequestDispatcher("meal.jsp").forward(request, response);
+         }
+     }
+ 

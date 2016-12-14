@@ -1,0 +1,105 @@
+Index: src/main/java/ru/javawebinar/topjava/model/Meal.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/model/Meal.java	(revision 7d284b885234674d7b06557d54368ea90d06d4db)
++++ src/main/java/ru/javawebinar/topjava/model/Meal.java	(revision )
+@@ -9,8 +9,6 @@
+  * 11.01.2015.
+  */
+ public class Meal extends BaseEntity {
+-    private Integer id;
+-
+     private final LocalDateTime dateTime;
+ 
+     private final String description;
+Index: pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- pom.xml	(revision 7d284b885234674d7b06557d54368ea90d06d4db)
++++ pom.xml	(revision )
+@@ -41,6 +41,14 @@
+                     <target>${java.version}</target>
+                 </configuration>
+             </plugin>
++            <plugin>
++                <groupId>org.apache.maven.plugins</groupId>
++                <artifactId>maven-surefire-plugin</artifactId>
++                <version>2.19.1</version>
++                <configuration>
++                    <argLine>-Dfile.encoding=UTF-8</argLine>
++                </configuration>
++            </plugin>
+         </plugins>
+     </build>
+ 
+Index: src/main/java/ru/javawebinar/topjava/repository/jdbc/JdbcUserRepositoryImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/repository/jdbc/JdbcUserRepositoryImpl.java	(revision 7d284b885234674d7b06557d54368ea90d06d4db)
++++ src/main/java/ru/javawebinar/topjava/repository/jdbc/JdbcUserRepositoryImpl.java	(revision )
+@@ -74,7 +74,8 @@
+ 
+     @Override
+     public User getByEmail(String email) {
+-        return jdbcTemplate.queryForObject("SELECT * FROM users WHERE email=?", ROW_MAPPER, email);
++        List<User> users = jdbcTemplate.query("SELECT * FROM users WHERE email=?", ROW_MAPPER, email);
++        return DataAccessUtils.singleResult(users);
+     }
+ 
+     @Override
+Index: src/main/java/ru/javawebinar/topjava/repository/MealRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/repository/MealRepository.java	(revision 7d284b885234674d7b06557d54368ea90d06d4db)
++++ src/main/java/ru/javawebinar/topjava/repository/MealRepository.java	(revision )
+@@ -11,7 +11,7 @@
+  */
+ public interface MealRepository {
+     // null if updated meal do not belong to userId
+-    Meal save(Meal Meal, int userId);
++    Meal save(Meal meal, int userId);
+ 
+     // false if meal do not belong to userId
+     boolean delete(int id, int userId);
+Index: src/main/java/ru/javawebinar/topjava/repository/jdbc/JdbcMealRepositoryImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/repository/jdbc/JdbcMealRepositoryImpl.java	(revision 7d284b885234674d7b06557d54368ea90d06d4db)
++++ src/main/java/ru/javawebinar/topjava/repository/jdbc/JdbcMealRepositoryImpl.java	(revision )
+@@ -16,7 +16,7 @@
+ public class JdbcMealRepositoryImpl implements MealRepository {
+ 
+     @Override
+-    public Meal save(Meal Meal, int userId) {
++    public Meal save(Meal meal, int userId) {
+         return null;
+     }
+ 
+Index: src/main/resources/logback.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/resources/logback.xml	(revision 7d284b885234674d7b06557d54368ea90d06d4db)
++++ src/main/resources/logback.xml	(revision )
+@@ -1,10 +1,6 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <configuration scan="true" scanPeriod="30 seconds">
+ 
+-    <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+-        <resetJUL>true</resetJUL>
+-    </contextListener>
+-
+     <!-- To enable JMX Management -->
+     <jmxConfigurator/>
+ 

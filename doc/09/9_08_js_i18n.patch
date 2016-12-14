@@ -1,0 +1,167 @@
+Index: config/messages/app.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- config/messages/app.properties	(date 1478114436000)
++++ config/messages/app.properties	(revision )
+@@ -30,3 +30,9 @@
+ common.update=Update
+ common.save=Save
+ common.cancel=Cancel
++
++common.deleted=Deleted
++common.saved=Saved
++common.enabled=Enabled
++common.disabled=Disabled
++common.failed=Failed
+\ No newline at end of file
+Index: src/main/webapp/resources/js/datatablesUtil.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/resources/js/datatablesUtil.js	(date 1478114436000)
++++ src/main/webapp/resources/js/datatablesUtil.js	(revision )
+@@ -7,12 +7,14 @@
+     });
+ }
+ 
+-function add() {
++function add(add_title) {
++    $('#modalTitle').html(add_title);
+     form.find(":input").val("");
+     $('#editRow').modal();
+ }
+ 
+ function updateRow(id) {
++    $('#modalTitle').html(edit_title);
+     $.get(ajaxUrl + id, function (data) {
+         $.each(data, function (key, value) {
+             form.find("input[name='" + key + "']").val(value);
+@@ -27,7 +29,7 @@
+         type: 'DELETE',
+         success: function () {
+             updateTable();
+-            successNoty('Deleted');
++            successNoty('common.deleted');
+         }
+     });
+ }
+@@ -40,7 +42,7 @@
+         data: 'enabled=' + enabled,
+         success: function () {
+             chkbox.closest('tr').fadeTo(300, enabled ? 1 : 0.3);
+-            successNoty(enabled ? 'Enabled' : 'Disabled');
++            successNoty(enabled ? 'common.enabled' : 'common.disabled');
+         }
+     });
+ }
+@@ -57,7 +59,7 @@
+         success: function () {
+             $('#editRow').modal('hide');
+             updateTable();
+-            successNoty('Saved');
++            successNoty('common.saved');
+         }
+     });
+ }
+@@ -71,10 +73,10 @@
+     }
+ }
+ 
+-function successNoty(text) {
++function successNoty(key) {
+     closeNoty();
+     noty({
+-        text: text,
++        text: i18n[key],
+         type: 'success',
+         layout: 'bottomRight',
+         timeout: true
+@@ -84,7 +86,7 @@
+ function failNoty(event, jqXHR, options, jsExc) {
+     closeNoty();
+     failedNote = noty({
+-        text: 'Failed: ' + jqXHR.statusText + "<br>" + jqXHR.responseJSON,
++        text: i18n['common.failed'] + ': ' + jqXHR.statusText + "<br>" + jqXHR.responseJSON,
+         type: 'error',
+         layout: 'bottomRight'
+     });
+@@ -92,12 +94,12 @@
+ 
+ function renderEditBtn(data, type, row) {
+     if (type == 'display') {
+-        return '<a class="btn btn-xs btn-primary" onclick="updateRow(' + row.id + ');">Edit</a>';
++        return '<a class="btn btn-xs btn-primary" onclick="updateRow(' + row.id + ');">'+i18n['common.update']+'</a>';
+     }
+ }
+ 
+ function renderDeleteBtn(data, type, row) {
+     if (type == 'display') {
+-        return '<a class="btn btn-xs btn-danger" onclick="deleteRow(' + row.id + ');">Delete</a>';
++        return '<a class="btn btn-xs btn-danger" onclick="deleteRow(' + row.id + ');">'+i18n['common.delete']+'</a>';
+     }
+ }
+\ No newline at end of file
+Index: src/main/webapp/WEB-INF/jsp/users.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/users.jsp	(date 1478114436000)
++++ src/main/webapp/WEB-INF/jsp/users.jsp	(revision )
+@@ -15,7 +15,7 @@
+             <h3><fmt:message key="users.title"/></h3>
+ 
+             <div class="view-box">
+-                <a class="btn btn-sm btn-info" onclick="add()"><fmt:message key="users.add"/></a>
++                <a class="btn btn-sm btn-info" onclick="add('<fmt:message key="users.add"/>')"><fmt:message key="users.add"/></a>
+ 
+                 <table class="table table-striped display" id="datatable">
+                     <thead>
+@@ -41,7 +41,7 @@
+         <div class="modal-content">
+             <div class="modal-header">
+                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+-                <h2 class="modal-title"><fmt:message key="users.add"/></h2>
++                <h2 class="modal-title" id="modalTitle"></h2>
+             </div>
+             <div class="modal-body">
+                 <form class="form-horizontal" method="post" id="detailsForm">
+@@ -82,6 +82,13 @@
+     </div>
+ </div>
+ </body>
++<script type="text/javascript">
++var i18n = [];
++    <c:forEach var='key' items='<%=new String[]{"common.update","common.delete","common.deleted","common.saved","common.enabled","common.disabled","common.failed"}%>'>
++i18n['${key}'] = '<fmt:message key="${key}"/>';
++    </c:forEach>
++var edit_title ='<fmt:message key="users.edit"/>';
++</script>
+ <script type="text/javascript" src="webjars/jquery/2.2.4/jquery.min.js"></script>
+ <script type="text/javascript" src="webjars/bootstrap/3.3.7-1/js/bootstrap.min.js"></script>
+ <script type="text/javascript" src="webjars/datatables/1.10.12/js/jquery.dataTables.min.js"></script>
+\ No newline at end of file
+Index: config/messages/app_ru.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- config/messages/app_ru.properties	(date 1478114436000)
++++ config/messages/app_ru.properties	(revision )
+@@ -29,4 +29,10 @@
+ common.delete=Удалить
+ common.update=Обновить
+ common.save=Сохранить
+-common.cancel=Отмена
+\ No newline at end of file
++common.cancel=Отмена
++
++common.deleted=Удален
++common.saved=Записан
++common.enabled=Активирован
++common.disabled=Деактивирован
++common.failed=Ошибка
+\ No newline at end of file

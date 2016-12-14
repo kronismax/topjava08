@@ -1,0 +1,178 @@
+Index: src/main/java/ru/javawebinar/topjava/repository/datajpa/CrudUserRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/repository/datajpa/CrudUserRepository.java	(date 1476788976000)
++++ src/main/java/ru/javawebinar/topjava/repository/datajpa/CrudUserRepository.java	(revision )
+@@ -1,5 +1,6 @@
+ package ru.javawebinar.topjava.repository.datajpa;
+ 
++import org.springframework.data.jpa.repository.EntityGraph;
+ import org.springframework.data.jpa.repository.JpaRepository;
+ import org.springframework.data.jpa.repository.Modifying;
+ import org.springframework.data.jpa.repository.Query;
+@@ -28,11 +29,13 @@
+     User findOne(Integer id);
+ 
+     @Override
+-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles ORDER BY u.name, u.email")
++    @Query("SELECT u FROM User u ORDER BY u.name, u.email")
+     List<User> findAll();
+ 
++    @Query("SELECT u FROM User u WHERE u.email=?1")
+     User getByEmail(String email);
+ 
+-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.meals WHERE u.id = ?1")
++    @EntityGraph(value = User.GRAPH_WITH_MEALS)
++    @Query("SELECT u FROM User u WHERE u.id=?1")
+     User getWithMeals(int id);
+ }
+Index: src/test/java/ru/javawebinar/topjava/service/AbstractUserServiceTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/service/AbstractUserServiceTest.java	(date 1476788976000)
++++ src/test/java/ru/javawebinar/topjava/service/AbstractUserServiceTest.java	(revision )
+@@ -50,8 +50,8 @@
+ 
+     @Test
+     public void testGet() throws Exception {
+-        User user = service.get(USER_ID);
+-        MATCHER.assertEquals(USER, user);
++        User user = service.get(ADMIN_ID);
++        MATCHER.assertEquals(ADMIN, user);
+     }
+ 
+     @Test(expected = NotFoundException.class)
+@@ -61,8 +61,8 @@
+ 
+     @Test
+     public void testGetByEmail() throws Exception {
+-        User user = service.getByEmail("user@yandex.ru");
+-        MATCHER.assertEquals(USER, user);
++        User user = service.getByEmail("admin@gmail.com");
++        MATCHER.assertEquals(ADMIN, user);
+     }
+ 
+     @Test
+@@ -76,6 +76,7 @@
+         User updated = new User(USER);
+         updated.setName("UpdatedName");
+         updated.setCaloriesPerDay(330);
++        updated.setRoles(Collections.singletonList(Role.ROLE_ADMIN));
+         service.update(updated);
+         MATCHER.assertEquals(updated, service.get(USER_ID));
+     }
+\ No newline at end of file
+Index: src/main/java/ru/javawebinar/topjava/model/User.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/model/User.java	(date 1476788976000)
++++ src/main/java/ru/javawebinar/topjava/model/User.java	(revision )
+@@ -1,5 +1,6 @@
+ package ru.javawebinar.topjava.model;
+ 
++import org.hibernate.annotations.BatchSize;
+ import org.hibernate.annotations.Cache;
+ import org.hibernate.annotations.CacheConcurrencyStrategy;
+ import org.hibernate.validator.constraints.Email;
+@@ -9,10 +10,7 @@
+ 
+ import javax.persistence.*;
+ import javax.validation.constraints.Digits;
+-import java.util.Date;
+-import java.util.EnumSet;
+-import java.util.List;
+-import java.util.Set;
++import java.util.*;
+ 
+ /**
+  * User: gkislin
+@@ -20,14 +18,17 @@
+  */
+ @NamedQueries({
+         @NamedQuery(name = User.DELETE, query = "DELETE FROM User u WHERE u.id=:id"),
+-        @NamedQuery(name = User.BY_EMAIL, query = "SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.email=?1"),
+-        @NamedQuery(name = User.ALL_SORTED, query = "SELECT u FROM User u LEFT JOIN FETCH u.roles ORDER BY u.name, u.email"),
++        @NamedQuery(name = User.BY_EMAIL, query = "SELECT u FROM User u WHERE u.email=?1"),
++        @NamedQuery(name = User.ALL_SORTED, query = "SELECT u FROM User u ORDER BY u.name, u.email"),
+ })
+ @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+ @Entity
++@NamedEntityGraph(name = User.GRAPH_WITH_MEALS, attributeNodes = {@NamedAttributeNode("meals")})
+ @Table(name = "users", uniqueConstraints = {@UniqueConstraint(columnNames = "email", name = "users_unique_email_idx")})
+ public class User extends NamedEntity {
+ 
++    public static final String GRAPH_WITH_MEALS = "User.withMeals";
++
+     public static final String DELETE = "User.delete";
+     public static final String ALL_SORTED = "User.getAllSorted";
+     public static final String BY_EMAIL = "User.getByEmail";
+@@ -51,7 +52,8 @@
+     @Enumerated(EnumType.STRING)
+     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+     @Column(name = "role")
+-    @ElementCollection(fetch = FetchType.LAZY)
++    @ElementCollection(fetch = FetchType.EAGER)
++    @BatchSize(size = 200)
+     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+     private Set<Role> roles;
+ 
+@@ -121,6 +123,10 @@
+ 
+     public Set<Role> getRoles() {
+         return roles;
++    }
++
++    public void setRoles(Collection<Role> roles) {
++        this.roles = EnumSet.copyOf(roles);
+     }
+ 
+     public String getPassword() {
+Index: src/main/resources/db/populateDB.sql
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/resources/db/populateDB.sql	(date 1476788976000)
++++ src/main/resources/db/populateDB.sql	(revision )
+@@ -11,7 +11,8 @@
+ 
+ INSERT INTO user_roles (role, user_id) VALUES
+   ('ROLE_USER', 100000),
+-  ('ROLE_ADMIN', 100001);
++  ('ROLE_ADMIN', 100001),
++  ('ROLE_USER', 100001);
+ 
+ INSERT INTO meals (date_time, description, calories, user_id) VALUES
+   ('2015-05-30 10:00:00', 'Завтрак', 500, 100000),
+Index: src/test/java/ru/javawebinar/topjava/UserTestData.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/UserTestData.java	(date 1476788976000)
++++ src/test/java/ru/javawebinar/topjava/UserTestData.java	(revision )
+@@ -17,7 +17,7 @@
+     public static final int ADMIN_ID = START_SEQ + 1;
+ 
+     public static final User USER = new User(USER_ID, "User", "user@yandex.ru", "password", Role.ROLE_USER);
+-    public static final User ADMIN = new User(ADMIN_ID, "Admin", "admin@gmail.com", "admin", Role.ROLE_ADMIN);
++    public static final User ADMIN = new User(ADMIN_ID, "Admin", "admin@gmail.com", "admin", Role.ROLE_ADMIN, Role.ROLE_USER);
+ 
+     public static final ModelMatcher<User> MATCHER = new ModelMatcher<>(
+             (expected, actual) -> expected == actual ||
+@@ -27,7 +27,7 @@
+                             && Objects.equals(expected.getEmail(), actual.getEmail())
+                             && Objects.equals(expected.getCaloriesPerDay(), actual.getCaloriesPerDay())
+                             && Objects.equals(expected.isEnabled(), actual.isEnabled())
+-//                            && Objects.equals(expected.getRoles(), actual.getRoles())
++                            && Objects.equals(expected.getRoles(), actual.getRoles())
+                     )
+     );
+ }
+\ No newline at end of file

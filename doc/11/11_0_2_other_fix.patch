@@ -1,0 +1,112 @@
+Index: .travis.yml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .travis.yml	(date 1479247188000)
++++ .travis.yml	(revision )
+@@ -2,6 +2,11 @@
+ language: java
+ jdk: oraclejdk8
+ 
++#https://dzone.com/articles/travis-ci-tutorial-java-projects
++cache:
++  directories:
++  - $HOME/.m2
++
+ # https://docs.travis-ci.com/user/database-setup/#PostgreSQL
+ before_script:
+   - psql -c 'create database topjava' -U postgres
+\ No newline at end of file
+Index: src/main/webapp/WEB-INF/web.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/web.xml	(date 1479247188000)
++++ src/main/webapp/WEB-INF/web.xml	(revision )
+@@ -36,17 +36,7 @@
+         <url-pattern>/</url-pattern>
+     </servlet-mapping>
+ 
+-    <!-- Spring Security -->
+     <filter>
+-        <filter-name>springSecurityFilterChain</filter-name>
+-        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+-    </filter>
+-    <filter-mapping>
+-        <filter-name>springSecurityFilterChain</filter-name>
+-        <url-pattern>/*</url-pattern>
+-    </filter-mapping>
+-
+-    <filter>
+         <filter-name>encodingFilter</filter-name>
+         <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+         <init-param>
+@@ -60,6 +50,16 @@
+     </filter>
+     <filter-mapping>
+         <filter-name>encodingFilter</filter-name>
++        <url-pattern>/*</url-pattern>
++    </filter-mapping>
++
++    <!-- Spring Security -->
++    <filter>
++        <filter-name>springSecurityFilterChain</filter-name>
++        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
++    </filter>
++    <filter-mapping>
++        <filter-name>springSecurityFilterChain</filter-name>
+         <url-pattern>/*</url-pattern>
+     </filter-mapping>
+ 
+Index: src/main/webapp/WEB-INF/tags/inputField.tag
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/tags/inputField.tag	(date 1479247188000)
++++ src/main/webapp/WEB-INF/tags/inputField.tag	(revision )
+@@ -7,8 +7,7 @@
+ <%@ attribute name="inputType" required="false" description="Input type" %>
+ 
+ <spring:bind path="${name}">
+-    <c:set var="cssGroup" value="form-group ${status.error ? 'error' : '' }"/>
+-    <div class="${cssGroup}">
++    <div class="form-group ${status.error ? 'error' : '' }">
+         <label class="control-label col-xs-2">${label}</label>
+ 
+         <div class="col-xs-8">
+\ No newline at end of file
+Index: src/main/java/ru/javawebinar/topjava/model/User.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/model/User.java	(date 1479247188000)
++++ src/main/java/ru/javawebinar/topjava/model/User.java	(revision )
+@@ -58,7 +58,7 @@
+     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+     private Set<Role> roles;
+ 
+-    @Column(name = "calories_per_day", columnDefinition = "default 2000")
++    @Column(name = "calories_per_day", columnDefinition = "int default 2000")
+     @Digits(fraction = 0, integer = 4)
+     private int caloriesPerDay = UserUtil.DEFAULT_CALORIES_PER_DAY;
+ 
+Index: src/main/java/ru/javawebinar/topjava/to/UserTo.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/to/UserTo.java	(date 1479247188000)
++++ src/main/java/ru/javawebinar/topjava/to/UserTo.java	(revision )
+@@ -75,7 +75,7 @@
+         return id == null;
+     }
+ 
+-    public int getCaloriesPerDay() {
++    public Integer getCaloriesPerDay() {
+         return caloriesPerDay;
+     }
+ 

@@ -1,0 +1,170 @@
+Index: src/main/java/ru/javawebinar/topjava/service/UserService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/service/UserService.java	(date 1477858463000)
++++ src/main/java/ru/javawebinar/topjava/service/UserService.java	(revision )
+@@ -2,6 +2,7 @@
+ 
+ 
+ import ru.javawebinar.topjava.model.User;
++import ru.javawebinar.topjava.to.UserTo;
+ import ru.javawebinar.topjava.util.exception.NotFoundException;
+ 
+ import java.util.List;
+@@ -19,6 +20,8 @@
+     User get(int id) throws NotFoundException;
+ 
+     User getByEmail(String email) throws NotFoundException;
++
++    void update(UserTo user);
+ 
+     List<User> getAll();
+ 
+Index: src/main/java/ru/javawebinar/topjava/util/UserUtil.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/util/UserUtil.java	(date 1477858463000)
++++ src/main/java/ru/javawebinar/topjava/util/UserUtil.java	(revision )
+@@ -14,4 +14,11 @@
+     public static User createNewFromTo(UserTo newUser) {
+         return new User(null, newUser.getName(), newUser.getEmail().toLowerCase(), newUser.getPassword(), Role.ROLE_USER);
+     }
++
++    public static User updateFromTo(User user, UserTo userTo) {
++        user.setName(userTo.getName());
++        user.setEmail(userTo.getEmail().toLowerCase());
++        user.setPassword(userTo.getPassword());
++        return user;
++    }
+ }
+Index: src/main/java/ru/javawebinar/topjava/web/user/AdminAjaxController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/web/user/AdminAjaxController.java	(date 1477858463000)
++++ src/main/java/ru/javawebinar/topjava/web/user/AdminAjaxController.java	(revision )
+@@ -20,6 +20,11 @@
+         return super.getAll();
+     }
+ 
++    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
++    public User get(@PathVariable("id") int id) {
++        return super.get(id);
++    }
++
+     @DeleteMapping("/{id}")
+     public void delete(@PathVariable("id") int id) {
+         super.delete(id);
+@@ -29,6 +34,8 @@
+     public void createOrUpdate(UserTo userTo) {
+         if (userTo.isNew()) {
+             super.create(UserUtil.createNewFromTo(userTo));
++        } else {
++            super.update(userTo);
+         }
+     }
+ 
+Index: src/main/webapp/resources/js/datatablesUtil.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/resources/js/datatablesUtil.js	(date 1477858463000)
++++ src/main/webapp/resources/js/datatablesUtil.js	(revision )
+@@ -19,6 +19,15 @@
+     $('#editRow').modal();
+ }
+ 
++function updateRow(id) {
++    $.get(ajaxUrl + id, function (data) {
++        $.each(data, function (key, value) {
++            form.find("input[name='" + key + "']").val(value);
++        });
++        $('#editRow').modal();
++    });
++}
++
+ function deleteRow(id) {
+     $.ajax({
+         url: ajaxUrl + id,
+Index: src/main/java/ru/javawebinar/topjava/service/UserServiceImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/service/UserServiceImpl.java	(date 1477858463000)
++++ src/main/java/ru/javawebinar/topjava/service/UserServiceImpl.java	(revision )
+@@ -8,6 +8,8 @@
+ import org.springframework.util.Assert;
+ import ru.javawebinar.topjava.model.User;
+ import ru.javawebinar.topjava.repository.UserRepository;
++import ru.javawebinar.topjava.to.UserTo;
++import ru.javawebinar.topjava.util.UserUtil;
+ import ru.javawebinar.topjava.util.exception.ExceptionUtil;
+ import ru.javawebinar.topjava.util.exception.NotFoundException;
+ 
+@@ -59,6 +61,15 @@
+         Assert.notNull(user, "user must not be null");
+         repository.save(user);
+     }
++
++    @CacheEvict(value = "users", allEntries = true)
++    @Transactional
++    @Override
++    public void update(UserTo userTo) {
++        User user = get(userTo.getId());
++        repository.save(UserUtil.updateFromTo(user, userTo));
++    }
++
+ 
+     @CacheEvict(value = "users", allEntries = true)
+     @Override
+Index: src/main/webapp/WEB-INF/jsp/users.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/users.jsp	(date 1477858463000)
++++ src/main/webapp/WEB-INF/jsp/users.jsp	(revision )
+@@ -40,7 +40,7 @@
+                                        <c:if test="${user.enabled}">checked</c:if> onclick="enable($(this), ${user.id})"/>
+                             </td>
+                             <td><fmt:formatDate value="${user.registered}" pattern="dd-MMMM-yyyy"/></td>
+-                            <td><a class="btn btn-xs btn-primary"><fmt:message key="common.update"/></a></td>
++                            <td><a class="btn btn-xs btn-primary"  onclick="updateRow(${user.id})"><fmt:message key="common.update"/></a></td>
+                             <td><a class="btn btn-xs btn-danger" onclick="deleteRow(${user.id})"><fmt:message key="common.delete"/></a></td>
+                         </tr>
+                     </c:forEach>
+\ No newline at end of file
+Index: src/main/java/ru/javawebinar/topjava/web/user/AbstractUserController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/web/user/AbstractUserController.java	(date 1477858463000)
++++ src/main/java/ru/javawebinar/topjava/web/user/AbstractUserController.java	(revision )
+@@ -5,6 +5,7 @@
+ import org.slf4j.LoggerFactory;
+ import ru.javawebinar.topjava.model.User;
+ import ru.javawebinar.topjava.service.UserService;
++import ru.javawebinar.topjava.to.UserTo;
+ 
+ import java.util.List;
+ 
+@@ -42,6 +43,11 @@
+         user.setId(id);
+         log.info("update " + user);
+         service.update(user);
++    }
++
++    public void update(UserTo userTo) {
++        log.info("update " + userTo);
++        service.update(userTo);
+     }
+ 
+     public User getByMail(String email) {

@@ -1,0 +1,221 @@
+Index: src/main/webapp/WEB-INF/jsp/fragments/headTag.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/fragments/headTag.jsp	(revision e001d84d23d32f94f1952dd90288b6e84e20ad8d)
++++ src/main/webapp/WEB-INF/jsp/fragments/headTag.jsp	(revision )
+@@ -6,7 +6,6 @@
+ <head>
+     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+     <title><fmt:message key="app.title"/></title>
+-    <c:set var="url">${pageContext.request.requestURL}</c:set>
+-    <base href="${fn:substring(url, 0, fn:length(url) - fn:length(pageContext.request.requestURI))}${pageContext.request.contextPath}/" />
++    <base href="${pageContext.request.contextPath}/"/>
+     <link rel="stylesheet" href="resources/css/style.css">
+ </head>
+Index: src/main/java/ru/javawebinar/topjava/web/meal/JspMealController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/web/meal/JspMealController.java	(revision e001d84d23d32f94f1952dd90288b6e84e20ad8d)
++++ src/main/java/ru/javawebinar/topjava/web/meal/JspMealController.java	(revision )
+@@ -2,8 +2,9 @@
+ 
+ import org.springframework.stereotype.Controller;
+ import org.springframework.ui.Model;
++import org.springframework.web.bind.annotation.GetMapping;
++import org.springframework.web.bind.annotation.PostMapping;
+ import org.springframework.web.bind.annotation.RequestMapping;
+-import org.springframework.web.bind.annotation.RequestMethod;
+ import ru.javawebinar.topjava.model.Meal;
+ import ru.javawebinar.topjava.util.TimeUtil;
+ 
+@@ -22,25 +23,25 @@
+ @RequestMapping(value = "/meals")
+ public class JspMealController extends AbstractMealController {
+ 
+-    @RequestMapping(value = "/delete", method = RequestMethod.GET)
++    @GetMapping("/delete")
+     public String delete(HttpServletRequest request) {
+         super.delete(getId(request));
+         return "redirect:/meals";
+     }
+ 
+-    @RequestMapping(value = "/update", method = RequestMethod.GET)
++    @GetMapping("/update")
+     public String update(HttpServletRequest request, Model model) {
+         model.addAttribute("meal", super.get(getId(request)));
+         return "meal";
+     }
+ 
+-    @RequestMapping(value = "/create", method = RequestMethod.GET)
++    @GetMapping("/create")
+     public String create(Model model) {
+         model.addAttribute("meal", new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS), "", 1000));
+         return "meal";
+     }
+ 
+-    @RequestMapping(method = RequestMethod.POST)
++    @PostMapping
+     public String updateOrCreate(HttpServletRequest request) {
+         String id = request.getParameter("id");
+         Meal userMeal = new Meal(id.isEmpty() ? null : Integer.valueOf(id),
+@@ -56,20 +57,14 @@
+         return "redirect:/meals";
+     }
+ 
+-    @RequestMapping(value = "/filter", method = RequestMethod.POST)
++    @PostMapping("/filter")
+     public String getBetween(HttpServletRequest request, Model model) {
+-        LocalDate startDate = TimeUtil.parseLocalDate(resetParam("startDate", request));
+-        LocalDate endDate = TimeUtil.parseLocalDate(resetParam("endDate", request));
+-        LocalTime startTime = TimeUtil.parseLocalTime(resetParam("startTime", request));
+-        LocalTime endTime = TimeUtil.parseLocalTime(resetParam("endTime", request));
++        LocalDate startDate = TimeUtil.parseLocalDate(request.getParameter("startDate"));
++        LocalDate endDate = TimeUtil.parseLocalDate(request.getParameter("endDate"));
++        LocalTime startTime = TimeUtil.parseLocalTime(request.getParameter("startTime"));
++        LocalTime endTime = TimeUtil.parseLocalTime(request.getParameter("endTime"));
+         model.addAttribute("meals", super.getBetween(startDate, startTime, endDate, endTime));
+         return "meals";
+-    }
+-
+-    private String resetParam(String param, HttpServletRequest request) {
+-        String value = request.getParameter(param);
+-        request.setAttribute(param, value);
+-        return value;
+     }
+ 
+     private int getId(HttpServletRequest request) {
+Index: src/test/java/ru/javawebinar/topjava/web/AbstractControllerTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/web/AbstractControllerTest.java	(revision e001d84d23d32f94f1952dd90288b6e84e20ad8d)
++++ src/test/java/ru/javawebinar/topjava/web/AbstractControllerTest.java	(revision )
+@@ -54,7 +54,7 @@
+     private WebApplicationContext webApplicationContext;
+ 
+     @PostConstruct
+-    void postConstruct() {
++    private void postConstruct() {
+         mockMvc = MockMvcBuilders
+                 .webAppContextSetup(webApplicationContext)
+                 .addFilter(CHARACTER_ENCODING_FILTER)
+Index: src/main/webapp/WEB-INF/jsp/meals.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/meals.jsp	(revision e001d84d23d32f94f1952dd90288b6e84e20ad8d)
++++ src/main/webapp/WEB-INF/jsp/meals.jsp	(revision )
+@@ -12,19 +12,19 @@
+     <form method="post" action="meals/filter">
+         <dl>
+             <dt><fmt:message key="meals.startDate"/>:</dt>
+-            <dd><input type="date" name="startDate" value="${startDate}"></dd>
++            <dd><input type="date" name="startDate" value="${param.startDate}"></dd>
+         </dl>
+         <dl>
+             <dt><fmt:message key="meals.endDate"/>:</dt>
+-            <dd><input type="date" name="endDate" value="${endDate}"></dd>
++            <dd><input type="date" name="endDate" value="${param.endDate}"></dd>
+         </dl>
+         <dl>
+             <dt><fmt:message key="meals.startTime"/>:</dt>
+-            <dd><input type="time" name="startTime" value="${startTime}"></dd>
++            <dd><input type="time" name="startTime" value="${param.startTime}"></dd>
+         </dl>
+         <dl>
+             <dt><fmt:message key="meals.endTime"/>:</dt>
+-            <dd><input type="time" name="endTime" value="${endTime}"></dd>
++            <dd><input type="time" name="endTime" value="${param.endTime}"></dd>
+         </dl>
+         <button type="submit"><fmt:message key="meals.filter"/></button>
+     </form>
+Index: src/test/java/ru/javawebinar/topjava/matcher/ModelMatcher.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/matcher/ModelMatcher.java	(revision e001d84d23d32f94f1952dd90288b6e84e20ad8d)
++++ src/test/java/ru/javawebinar/topjava/matcher/ModelMatcher.java	(revision )
+@@ -34,6 +34,14 @@
+         boolean compare(T expected, T actual);
+     }
+ 
++    public static <T> ModelMatcher<T> of(Class<T> entityClass) {
++        return new ModelMatcher<>(entityClass);
++    }
++
++    public static <T> ModelMatcher<T> of(Class<T> entityClass, Comparator<T> comparator) {
++        return new ModelMatcher<>(entityClass, comparator);
++    }
++
+     public ModelMatcher(Class<T> entityClass) {
+         this(entityClass, (Comparator<T>) DEFAULT_COMPARATOR);
+     }
+Index: src/test/java/ru/javawebinar/topjava/MealTestData.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/MealTestData.java	(revision e001d84d23d32f94f1952dd90288b6e84e20ad8d)
++++ src/test/java/ru/javawebinar/topjava/MealTestData.java	(revision )
+@@ -16,7 +16,7 @@
+  */
+ public class MealTestData {
+ 
+-    public static final ModelMatcher<Meal> MATCHER = new ModelMatcher<>(Meal.class);
++    public static final ModelMatcher<Meal> MATCHER = ModelMatcher.of(Meal.class);
+ 
+     public static final int MEAL1_ID = START_SEQ + 2;
+     public static final int ADMIN_MEAL_ID = START_SEQ + 8;
+Index: src/test/java/ru/javawebinar/topjava/UserTestData.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/UserTestData.java	(revision e001d84d23d32f94f1952dd90288b6e84e20ad8d)
++++ src/test/java/ru/javawebinar/topjava/UserTestData.java	(revision )
+@@ -19,7 +19,7 @@
+     public static final User USER = new User(USER_ID, "User", "user@yandex.ru", "password", Role.ROLE_USER);
+     public static final User ADMIN = new User(ADMIN_ID, "Admin", "admin@gmail.com", "admin", Role.ROLE_ADMIN, Role.ROLE_USER);
+ 
+-    public static final ModelMatcher<User> MATCHER = new ModelMatcher<>(User.class,
++    public static final ModelMatcher<User> MATCHER = ModelMatcher.of(User.class,
+             (expected, actual) -> expected == actual ||
+                     (Objects.equals(expected.getPassword(), actual.getPassword())
+                             && Objects.equals(expected.getId(), actual.getId())
+\ No newline at end of file
+Index: src/test/java/ru/javawebinar/topjava/web/user/RootControllerTest.java
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/web/user/RootControllerTest.java	(revision e001d84d23d32f94f1952dd90288b6e84e20ad8d)
++++ src/test/java/ru/javawebinar/topjava/web/RootControllerTest.java	(revision )
+@@ -1,7 +1,6 @@
+-package ru.javawebinar.topjava.web.user;
++package ru.javawebinar.topjava.web;
+ 
+ import org.junit.Test;
+-import ru.javawebinar.topjava.web.AbstractControllerTest;
+ 
+ import static org.hamcrest.Matchers.*;
+ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+\ No newline at end of file
+Index: src/main/webapp/WEB-INF/jsp/fragments/bodyHeader.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/fragments/bodyHeader.jsp	(revision e001d84d23d32f94f1952dd90288b6e84e20ad8d)
++++ src/main/webapp/WEB-INF/jsp/fragments/bodyHeader.jsp	(revision )
+@@ -1,4 +1,4 @@
+ <%@page contentType="text/html" pageEncoding="UTF-8" %>
+ <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+ 
+-<header><a href="${pageContext.request.contextPath}/"><fmt:message key="app.home"/></a>&nbsp;&nbsp;<a href="meals"><fmt:message key="app.title"/></a></header>
+\ No newline at end of file
++<header><a href=""><fmt:message key="app.home"/></a>&nbsp;&nbsp;<a href="meals"><fmt:message key="app.title"/></a></header>
+\ No newline at end of file

@@ -1,0 +1,88 @@
+Index: src/test/java/ru/javawebinar/topjava/web/ResourceControllerTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/web/ResourceControllerTest.java	(revision )
++++ src/test/java/ru/javawebinar/topjava/web/ResourceControllerTest.java	(revision )
+@@ -0,0 +1,24 @@
++package ru.javawebinar.topjava.web;
++
++import org.junit.Test;
++import org.springframework.http.MediaType;
++
++import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
++import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
++import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
++import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
++
++/**
++ * GKislin
++ * 10.04.2015.
++ */
++public class ResourceControllerTest extends AbstractControllerTest {
++
++    @Test
++    public void testResources() throws Exception {
++        mockMvc.perform(get("/resources/css/style.css"))
++                .andDo(print())
++                .andExpect(content().contentType(MediaType.valueOf("text/css")))
++                .andExpect(status().isOk());
++    }
++}
+\ No newline at end of file
+Index: src/test/java/ru/javawebinar/topjava/web/RootControllerTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/web/RootControllerTest.java	(date 1477403723000)
++++ src/test/java/ru/javawebinar/topjava/web/RootControllerTest.java	(revision )
+@@ -6,6 +6,8 @@
+ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
++import static ru.javawebinar.topjava.MealTestData.MEAL1;
++import static ru.javawebinar.topjava.MealTestData.MEAL1_ID;
+ import static ru.javawebinar.topjava.UserTestData.USER;
+ import static ru.javawebinar.topjava.model.BaseEntity.START_SEQ;
+ 
+@@ -30,4 +32,21 @@
+                         )
+                 )));
+     }
++
++    @Test
++    public void testMeals() throws Exception {
++        mockMvc.perform(get("/meals"))
++                .andDo(print())
++                .andExpect(status().isOk())
++                .andExpect(view().name("meals"))
++                .andExpect(forwardedUrl("/WEB-INF/jsp/meals.jsp"))
++                .andExpect(model().attribute("meals", hasSize(6)))
++                .andExpect(model().attribute("meals", hasItem(
++                        allOf(
++                                hasProperty("id", is(MEAL1_ID)),
++                                hasProperty("description", is(MEAL1.getDescription()))
++                        )
++                )));
++    }
++
+ }
+\ No newline at end of file
+Index: src/main/resources/logback.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/resources/logback.xml	(date 1477403723000)
++++ src/main/resources/logback.xml	(revision )
+@@ -20,6 +20,8 @@
+         </encoder>
+     </appender>
+ 
++    <!--<logger name="org.springframework.web" level="DEBUG"/>-->
++    <logger name="org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver" level="debug"/>
+     <logger name="ru.javawebinar.topjava" level="debug"/>
+ 
+     <!--log hibernate showSql-->

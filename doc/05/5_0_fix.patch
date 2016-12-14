@@ -1,0 +1,140 @@
+Index: src/test/java/ru/javawebinar/topjava/service/MealServiceTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/service/MealServiceTest.java	(revision b30370a9301c6a9f65677865401ef753b86e8364)
++++ src/test/java/ru/javawebinar/topjava/service/MealServiceTest.java	(revision )
+@@ -7,7 +7,6 @@
+ import org.springframework.test.context.jdbc.Sql;
+ import org.springframework.test.context.jdbc.SqlConfig;
+ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+-import ru.javawebinar.topjava.MealTestData;
+ import ru.javawebinar.topjava.model.Meal;
+ import ru.javawebinar.topjava.util.exception.NotFoundException;
+ 
+@@ -32,7 +31,7 @@
+ 
+     @Test
+     public void testDelete() throws Exception {
+-        service.delete(MealTestData.MEAL1_ID, USER_ID);
++        service.delete(MEAL1_ID, USER_ID);
+         MATCHER.assertCollectionEquals(Arrays.asList(MEAL6, MEAL5, MEAL4, MEAL3, MEAL2), service.getAll(USER_ID));
+     }
+ 
+\ No newline at end of file
+Index: .travis.yml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .travis.yml	(revision b30370a9301c6a9f65677865401ef753b86e8364)
++++ .travis.yml	(revision )
+@@ -1,2 +1,8 @@
++# https://docs.travis-ci.com/user/languages/java/
+ language: java
+-jdk: oraclejdk8
+\ No newline at end of file
++jdk: oraclejdk8
++
++# https://docs.travis-ci.com/user/database-setup/#PostgreSQL
++before_script:
++  - psql -c 'create database topjava' -U postgres
++  - psql -c 'create user "user"; grant all privileges on database topjava to "user"' -U postgres
+\ No newline at end of file
+Index: src/main/java/ru/javawebinar/topjava/model/User.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/model/User.java	(revision b30370a9301c6a9f65677865401ef753b86e8364)
++++ src/main/java/ru/javawebinar/topjava/model/User.java	(revision )
+@@ -32,28 +32,28 @@
+     @Column(name = "email", nullable = false, unique = true)
+     @Email
+     @NotEmpty
+-    protected String email;
++    private String email;
+ 
+     @Column(name = "password", nullable = false)
+     @NotEmpty
+     @Length(min = 5)
+-    protected String password;
++    private String password;
+ 
+     @Column(name = "enabled", nullable = false)
+-    protected boolean enabled = true;
++    private boolean enabled = true;
+ 
+     @Column(name = "registered", columnDefinition = "timestamp default now()")
+-    protected Date registered = new Date();
++    private Date registered = new Date();
+ 
+     @Enumerated(EnumType.STRING)
+     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+     @Column(name = "role")
+     @ElementCollection(fetch = FetchType.EAGER)
+-    protected Set<Role> roles;
++    private Set<Role> roles;
+ 
+     @Column(name = "calories_per_day", columnDefinition = "default 2000")
+     @Digits(fraction = 0, integer = 4)
+-    protected int caloriesPerDay = MealsUtil.DEFAULT_CALORIES_PER_DAY;
++    private int caloriesPerDay = MealsUtil.DEFAULT_CALORIES_PER_DAY;
+ 
+     public User() {
+     }
+Index: src/main/java/ru/javawebinar/topjava/repository/jdbc/JdbcMealRepositoryImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/repository/jdbc/JdbcMealRepositoryImpl.java	(revision b30370a9301c6a9f65677865401ef753b86e8364)
++++ src/main/java/ru/javawebinar/topjava/repository/jdbc/JdbcMealRepositoryImpl.java	(revision )
+@@ -32,27 +32,27 @@
+     @Autowired
+     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+ 
+-    private SimpleJdbcInsert insertUserMeal;
++    private SimpleJdbcInsert insertMeal;
+ 
+     @Autowired
+     public JdbcMealRepositoryImpl(DataSource dataSource) {
+-        this.insertUserMeal = new SimpleJdbcInsert(dataSource)
++        this.insertMeal = new SimpleJdbcInsert(dataSource)
+                 .withTableName("meals")
+                 .usingGeneratedKeyColumns("id");
+     }
+ 
+     @Override
+-    public Meal save(Meal userMeal, int userId) {
++    public Meal save(Meal meal, int userId) {
+         MapSqlParameterSource map = new MapSqlParameterSource()
+-                .addValue("id", userMeal.getId())
+-                .addValue("description", userMeal.getDescription())
+-                .addValue("calories", userMeal.getCalories())
+-                .addValue("date_time", userMeal.getDateTime())
++                .addValue("id", meal.getId())
++                .addValue("description", meal.getDescription())
++                .addValue("calories", meal.getCalories())
++                .addValue("date_time", meal.getDateTime())
+                 .addValue("user_id", userId);
+ 
+-        if (userMeal.isNew()) {
+-            Number newId = insertUserMeal.executeAndReturnKey(map);
+-            userMeal.setId(newId.intValue());
++        if (meal.isNew()) {
++            Number newId = insertMeal.executeAndReturnKey(map);
++            meal.setId(newId.intValue());
+         } else {
+             if (namedParameterJdbcTemplate.update("" +
+                             "UPDATE meals " +
+@@ -62,7 +62,7 @@
+                 return null;
+             }
+         }
+-        return userMeal;
++        return meal;
+     }
+ 
+     @Override

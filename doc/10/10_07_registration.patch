@@ -1,0 +1,179 @@
+Index: config/messages/app.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- config/messages/app.properties	(date 1478704563000)
++++ config/messages/app.properties	(revision )
+@@ -4,6 +4,8 @@
+ app.login=Login
+ app.logout=Logout
+ app.profile=profile
++app.register=Register
++app.registered=You are registered. Please Sign in.
+ 
+ users.title=User list
+ users.edit=Edit user
+@@ -38,4 +40,5 @@
+ common.saved=Saved
+ common.enabled=Enabled
+ common.disabled=Disabled
+-common.failed=Failed
+\ No newline at end of file
++common.failed=Failed
++common.add=Add
+\ No newline at end of file
+Index: src/main/resources/spring/spring-security.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/resources/spring/spring-security.xml	(date 1478704563000)
++++ src/main/resources/spring/spring-security.xml	(revision )
+@@ -18,6 +18,7 @@
+ 
+     <http>
+         <intercept-url pattern="/login" access="permitAll"/>
++        <intercept-url pattern="/register" access="permitAll"/>
+ 
+         <intercept-url pattern="/**/admin/**" access="hasRole('ROLE_ADMIN')"/>
+         <intercept-url pattern="/**" access="isAuthenticated()"/>
+\ No newline at end of file
+Index: src/main/java/ru/javawebinar/topjava/web/RootController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/web/RootController.java	(date 1478704563000)
++++ src/main/java/ru/javawebinar/topjava/web/RootController.java	(revision )
+@@ -8,6 +8,7 @@
+ import org.springframework.web.bind.support.SessionStatus;
+ import ru.javawebinar.topjava.AuthorizedUser;
+ import ru.javawebinar.topjava.to.UserTo;
++import ru.javawebinar.topjava.util.UserUtil;
+ import ru.javawebinar.topjava.web.user.AbstractUserController;
+ 
+ import javax.validation.Valid;
+@@ -60,6 +61,25 @@
+             AuthorizedUser.get().update(userTo);
+             status.setComplete();
+             return "redirect:meals";
++        }
++    }
++
++    @GetMapping("/register")
++    public String register(ModelMap model) {
++        model.addAttribute("userTo", new UserTo());
++        model.addAttribute("register", true);
++        return "profile";
++    }
++
++    @PostMapping("/register")
++    public String saveRegister(@Valid UserTo userTo, BindingResult result, SessionStatus status, ModelMap model) {
++        if (result.hasErrors()) {
++            model.addAttribute("register", true);
++            return "profile";
++        } else {
++            super.create(UserUtil.createNewFromTo(userTo));
++            status.setComplete();
++            return "redirect:login?message=app.registered";
+         }
+     }
+ }
+Index: src/main/webapp/WEB-INF/jsp/profile.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/profile.jsp	(date 1478704563000)
++++ src/main/webapp/WEB-INF/jsp/profile.jsp	(revision )
+@@ -15,11 +15,20 @@
+ <div class="jumbotron">
+     <div class="container">
+         <div class="shadow">
+-            <h2>${userTo.name} <fmt:message key="app.profile"/></h2>
++            <h3>
++                <c:if test="${register}">
++                    <fmt:message key="app.register"/>
++                    <fmt:message key="common.add" var="saveButton"/>
++                </c:if>
++                <c:if test="${not register}">
++                    ${userTo.name} <fmt:message key="app.profile"/>
++                    <fmt:message key="common.update" var="saveButton"/>
++                </c:if>
++            </h3>
+ 
+             <div class="view-box">
+-                <form:form modelAttribute="userTo" class="form-horizontal" method="post" action="profile"
+-                           charset="utf-8" accept-charset="UTF-8">
++                <form:form modelAttribute="userTo" class="form-horizontal" method="post"
++                           action="${register ? 'register' : 'profile'}" charset="utf-8" accept-charset="UTF-8">
+ 
+                     <fmt:message key="users.name" var="userName"/>
+                     <topjava:inputField label='${userName}' name="name"/>
+@@ -35,7 +44,7 @@
+ 
+                     <div class="form-group">
+                         <div class="col-xs-offset-2 col-xs-10">
+-                            <button type="submit" class="btn btn-primary"><fmt:message key="common.update"/></button>
++                            <button type="submit" class="btn btn-primary">${saveButton}</button>
+                         </div>
+                     </div>
+                 </form:form>
+Index: src/main/java/ru/javawebinar/topjava/service/UserServiceImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/service/UserServiceImpl.java	(date 1478704563000)
++++ src/main/java/ru/javawebinar/topjava/service/UserServiceImpl.java	(revision )
+@@ -90,7 +90,7 @@
+ 
+     @Override
+     public AuthorizedUser loadUserByUsername(String email) throws UsernameNotFoundException {
+-        User u = repository.getByEmail(email);
++        User u = repository.getByEmail(email.toLowerCase());
+         if (u == null) {
+             throw new UsernameNotFoundException("User " + email + " is not found");
+         }
+Index: src/main/webapp/WEB-INF/jsp/login.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/login.jsp	(date 1478704563000)
++++ src/main/webapp/WEB-INF/jsp/login.jsp	(revision )
+@@ -40,6 +40,7 @@
+ 
+         <p>Admin login: <b>admin@gmail.com / admin</b></p>
+ 
++        <p><a class="btn btn-primary btn-lg" role="button" href="register"><fmt:message key="app.register"/> &raquo;</a></p>
+         <p>Стек технологий: <a href="http://projects.spring.io/spring-security/">Spring Security</a>,
+             <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/html/mvc.html">Spring MVC</a>,
+             <a href="http://projects.spring.io/spring-data-jpa/">Spring Data JPA</a>,
+\ No newline at end of file
+Index: config/messages/app_ru.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- config/messages/app_ru.properties	(date 1478704563000)
++++ config/messages/app_ru.properties	(revision )
+@@ -4,6 +4,8 @@
+ app.login=Войти
+ app.logout=Выйти
+ app.profile=профиль
++app.register=Зарегистрироваться
++app.registered=Вы загеристрированы. Введите ваш логин/пароль.
+ 
+ users.title=Список пользователей
+ users.edit=Редактировать пользователя
+@@ -38,4 +40,5 @@
+ common.saved=Записан
+ common.enabled=Активирован
+ common.disabled=Деактивирован
+-common.failed=Ошибка
+\ No newline at end of file
++common.failed=Ошибка
++common.add=Добавить
+\ No newline at end of file

@@ -1,0 +1,81 @@
+Index: config/messages/app.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- config/messages/app.properties	(date 1477906734000)
++++ config/messages/app.properties	(revision )
+@@ -2,6 +2,7 @@
+ app.home=Home
+ app.footer=Project <a href\="https\://github.com/JavaOPs/topjava" target\=_blank>Maven/ Spring/ Security/ JPA(Hibernate)/ Jackson/jQuery</a> application
+ app.login=Login as
++app.logout=Logout
+ 
+ users.title=User list
+ users.edit=Edit user
+\ No newline at end of file
+Index: src/main/resources/spring/spring-security.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/resources/spring/spring-security.xml	(date 1477906734000)
++++ src/main/resources/spring/spring-security.xml	(revision )
+@@ -1,6 +1,6 @@
+-<beans:beans xmlns="http://www.springframework.org/schema/security"
+-             xmlns:beans="http://www.springframework.org/schema/beans"
++<beans:beans xmlns:beans="http://www.springframework.org/schema/beans"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++             xmlns="http://www.springframework.org/schema/security"
+              xsi:schemaLocation="http://www.springframework.org/schema/beans
+ 	http://www.springframework.org/schema/beans/spring-beans.xsd
+ 	http://www.springframework.org/schema/security
+@@ -13,6 +13,14 @@
+         <http-basic/>
+         <intercept-url pattern="/rest/admin/**" access="hasRole('ROLE_ADMIN')"/>
+         <intercept-url pattern="/**" access="isAuthenticated()"/>
++        <csrf disabled="true"/>
++    </http>
++
++    <http>
++        <intercept-url pattern="/**/admin/**" access="hasRole('ROLE_ADMIN')"/>
++        <intercept-url pattern="/**" access="isAuthenticated()"/>
++        <form-login/>
++        <logout/>
+         <csrf disabled="true"/>
+     </http>
+ 
+\ No newline at end of file
+Index: src/main/webapp/WEB-INF/jsp/fragments/bodyHeader.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/fragments/bodyHeader.jsp	(date 1477906734000)
++++ src/main/webapp/WEB-INF/jsp/fragments/bodyHeader.jsp	(revision )
+@@ -9,7 +9,7 @@
+         <div class="collapse navbar-collapse">
+             <form class="navbar-form navbar-right">
+                 <a class="btn btn-info" role="button" href="users"><fmt:message key="users.title"/></a>
+-                <a class="btn btn-primary" role="button" href=""><fmt:message key="app.login"/></a>
++                <a class="btn btn-primary" role="button" href="logout"><fmt:message key="app.logout"/></a>
+             </form>
+         </div>
+     </div>
+\ No newline at end of file
+Index: config/messages/app_ru.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- config/messages/app_ru.properties	(date 1477906734000)
++++ config/messages/app_ru.properties	(revision )
+@@ -2,6 +2,7 @@
+ app.home=Главная
+ app.footer=Приложение по проекту <a href="https://github.com/JavaOPs/topjava" target=_blank>Maven/ Spring/ Security/ JPA(Hibernate)/ Jackson/jQuery</a>
+ app.login=Зайти как
++app.logout=Выйти
+ 
+ users.title=Список пользователей
+ users.edit=Редактировать пользователя
+\ No newline at end of file

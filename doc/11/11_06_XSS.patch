@@ -1,0 +1,181 @@
+Index: src/main/java/ru/javawebinar/topjava/model/Meal.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/model/Meal.java	(date 1479347405000)
++++ src/main/java/ru/javawebinar/topjava/model/Meal.java	(revision )
+@@ -2,6 +2,7 @@
+ 
+ import org.hibernate.validator.constraints.NotEmpty;
+ import org.hibernate.validator.constraints.Range;
++import org.hibernate.validator.constraints.SafeHtml;
+ import org.springframework.format.annotation.DateTimeFormat;
+ 
+ import javax.persistence.*;
+@@ -39,6 +40,7 @@
+ 
+     @Column(name = "description", nullable = false)
+     @NotEmpty
++    @SafeHtml
+     private String description;
+ 
+     @Column(name = "calories", nullable = false)
+Index: src/main/java/ru/javawebinar/topjava/model/NamedEntity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/model/NamedEntity.java	(date 1479347405000)
++++ src/main/java/ru/javawebinar/topjava/model/NamedEntity.java	(revision )
+@@ -1,6 +1,7 @@
+ package ru.javawebinar.topjava.model;
+ 
+ import org.hibernate.validator.constraints.NotEmpty;
++import org.hibernate.validator.constraints.SafeHtml;
+ 
+ import javax.persistence.Column;
+ import javax.persistence.MappedSuperclass;
+@@ -14,6 +15,7 @@
+ 
+     @NotEmpty
+     @Column(name = "name", nullable = false)
++    @SafeHtml
+     protected String name;
+ 
+     public NamedEntity() {
+Index: pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- pom.xml	(date 1479347405000)
++++ pom.xml	(revision )
+@@ -224,6 +224,11 @@
+             <version>${hibernate-validator.version}</version>
+         </dependency>
+         <dependency>
++            <groupId>org.jsoup</groupId>
++            <artifactId>jsoup</artifactId>
++            <version>1.10.1</version>
++        </dependency>
++        <dependency>
+             <groupId>org.hibernate</groupId>
+             <artifactId>hibernate-ehcache</artifactId>
+             <version>${hibernate.version}</version>
+Index: src/main/java/ru/javawebinar/topjava/model/User.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/model/User.java	(date 1479347405000)
++++ src/main/java/ru/javawebinar/topjava/model/User.java	(revision )
+@@ -1,12 +1,13 @@
+ package ru.javawebinar.topjava.model;
+ 
+-import org.hibernate.annotations.BatchSize;
+ import com.fasterxml.jackson.annotation.JsonView;
++import org.hibernate.annotations.BatchSize;
+ import org.hibernate.annotations.Cache;
+ import org.hibernate.annotations.CacheConcurrencyStrategy;
+ import org.hibernate.validator.constraints.Email;
+ import org.hibernate.validator.constraints.Length;
+ import org.hibernate.validator.constraints.NotEmpty;
++import org.hibernate.validator.constraints.SafeHtml;
+ import org.springframework.util.CollectionUtils;
+ import ru.javawebinar.topjava.View;
+ import ru.javawebinar.topjava.util.UserUtil;
+@@ -39,12 +40,14 @@
+     @Column(name = "email", nullable = false, unique = true)
+     @Email
+     @NotEmpty
++    @SafeHtml
+     private String email;
+ 
+     @Column(name = "password", nullable = false)
+     @NotEmpty
+     @Length(min = 5)
+     @JsonView(View.REST.class)
++    @SafeHtml
+     private String password;
+ 
+     @Column(name = "enabled", nullable = false)
+Index: src/main/java/ru/javawebinar/topjava/to/UserTo.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/to/UserTo.java	(date 1479347405000)
++++ src/main/java/ru/javawebinar/topjava/to/UserTo.java	(revision )
+@@ -3,6 +3,7 @@
+ import org.hibernate.validator.constraints.Email;
+ import org.hibernate.validator.constraints.NotEmpty;
+ import org.hibernate.validator.constraints.Range;
++import org.hibernate.validator.constraints.SafeHtml;
+ import ru.javawebinar.topjava.util.UserUtil;
+ 
+ import javax.validation.constraints.NotNull;
+@@ -15,13 +16,16 @@
+     private Integer id;
+ 
+     @NotEmpty
++    @SafeHtml
+     private String name;
+ 
+     @Email
+     @NotEmpty
++    @SafeHtml
+     private String email;
+ 
+     @Size(min = 5, max = 64, message = " must between 5 and 64 characters")
++    @SafeHtml
+     private String password;
+ 
+     @Range(min = 100, max = 5000)
+Index: src/test/java/ru/javawebinar/topjava/web/meal/MealRestControllerTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/web/meal/MealRestControllerTest.java	(date 1479347405000)
++++ src/test/java/ru/javawebinar/topjava/web/meal/MealRestControllerTest.java	(revision )
+@@ -11,6 +11,7 @@
+ import ru.javawebinar.topjava.web.AbstractControllerTest;
+ import ru.javawebinar.topjava.web.json.JsonUtil;
+ 
++import java.time.LocalDateTime;
+ import java.util.Arrays;
+ 
+ import static org.junit.Assert.assertEquals;
+@@ -19,10 +20,9 @@
+ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+ import static ru.javawebinar.topjava.MealTestData.*;
++import static ru.javawebinar.topjava.MealTestData.MATCHER;
+ import static ru.javawebinar.topjava.TestUtil.userHttpBasic;
+-import static ru.javawebinar.topjava.UserTestData.ADMIN;
+-import static ru.javawebinar.topjava.UserTestData.ADMIN_ID;
+-import static ru.javawebinar.topjava.UserTestData.USER;
++import static ru.javawebinar.topjava.UserTestData.*;
+ import static ru.javawebinar.topjava.model.BaseEntity.START_SEQ;
+ 
+ public class MealRestControllerTest extends AbstractControllerTest {
+@@ -87,6 +87,17 @@
+     @Test
+     public void testUpdateInvalid() throws Exception {
+         Meal invalid = new Meal(MEAL1_ID, null, null, 6000);
++        mockMvc.perform(put(REST_URL + MEAL1_ID)
++                .contentType(MediaType.APPLICATION_JSON)
++                .content(JsonUtil.writeValue(invalid))
++                .with(userHttpBasic(USER)))
++                .andDo(print())
++                .andExpect(status().isBadRequest());
++    }
++
++    @Test
++    public void testUpdateHtmlUnsafe() throws Exception {
++        Meal invalid = new Meal(MEAL1_ID, LocalDateTime.now(), "<script>alert(123)</script>", 200);
+         mockMvc.perform(put(REST_URL + MEAL1_ID)
+                 .contentType(MediaType.APPLICATION_JSON)
+                 .content(JsonUtil.writeValue(invalid))
+\ No newline at end of file

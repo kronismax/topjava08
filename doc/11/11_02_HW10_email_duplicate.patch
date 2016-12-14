@@ -1,0 +1,149 @@
+Index: config/messages/app.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- config/messages/app.properties	(date 1479254274000)
++++ config/messages/app.properties	(revision )
+@@ -41,4 +41,6 @@
+ common.enabled=Enabled
+ common.disabled=Disabled
+ common.failed=Failed
+-common.add=Add
+\ No newline at end of file
++common.add=Add
++
++exception.duplicate_email=User with this email already present in application.
+\ No newline at end of file
+Index: src/main/java/ru/javawebinar/topjava/web/user/AdminAjaxController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/web/user/AdminAjaxController.java	(date 1479254274000)
++++ src/main/java/ru/javawebinar/topjava/web/user/AdminAjaxController.java	(revision )
+@@ -1,5 +1,9 @@
+ package ru.javawebinar.topjava.web.user;
+ 
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.context.MessageSource;
++import org.springframework.context.i18n.LocaleContextHolder;
++import org.springframework.dao.DataIntegrityViolationException;
+ import org.springframework.http.MediaType;
+ import org.springframework.web.bind.annotation.*;
+ import ru.javawebinar.topjava.model.User;
+@@ -16,6 +20,9 @@
+ @RequestMapping("/ajax/admin/users")
+ public class AdminAjaxController extends AbstractUserController {
+ 
++    @Autowired
++    private MessageSource messageSource;
++
+     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+     public List<User> getAll() {
+         return super.getAll();
+@@ -33,10 +40,14 @@
+ 
+     @PostMapping
+     public void createOrUpdate(@Valid UserTo userTo) {
++        try {
+-        if (userTo.isNew()) {
+-            super.create(UserUtil.createNewFromTo(userTo));
+-        } else {
+-            super.update(userTo);
++            if (userTo.isNew()) {
++                super.create(UserUtil.createNewFromTo(userTo));
++            } else {
++                super.update(userTo);
++            }
++        } catch (DataIntegrityViolationException e) {
++            throw new DataIntegrityViolationException(messageSource.getMessage("exception.duplicate_email", null, LocaleContextHolder.getLocale()));
+         }
+     }
+ 
+Index: src/main/java/ru/javawebinar/topjava/web/RootController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/web/RootController.java	(date 1479254274000)
++++ src/main/java/ru/javawebinar/topjava/web/RootController.java	(revision )
+@@ -1,5 +1,6 @@
+ package ru.javawebinar.topjava.web;
+ 
++import org.springframework.dao.DataIntegrityViolationException;
+ import org.springframework.security.access.prepost.PreAuthorize;
+ import org.springframework.stereotype.Controller;
+ import org.springframework.ui.ModelMap;
+@@ -53,16 +54,19 @@
+ 
+     @PostMapping("/profile")
+     public String updateProfile(@Valid UserTo userTo, BindingResult result, SessionStatus status) {
+-        if (result.hasErrors()) {
+-            return "profile";
+-        } else {
++        if (!result.hasErrors()) {
++            try {
+-            userTo.setId(AuthorizedUser.id());
+-            super.update(userTo);
+-            AuthorizedUser.get().update(userTo);
+-            status.setComplete();
+-            return "redirect:meals";
++                userTo.setId(AuthorizedUser.id());
++                super.update(userTo);
++                AuthorizedUser.get().update(userTo);
++                status.setComplete();
++                return "redirect:meals";
++            } catch (DataIntegrityViolationException ex) {
++                result.rejectValue("email", "exception.duplicate_email");
+-        }
+-    }
++            }
++        }
++        return "profile";
++    }
+ 
+     @GetMapping("/register")
+     public String register(ModelMap model) {
+@@ -73,13 +77,16 @@
+ 
+     @PostMapping("/register")
+     public String saveRegister(@Valid UserTo userTo, BindingResult result, SessionStatus status, ModelMap model) {
+-        if (result.hasErrors()) {
+-            model.addAttribute("register", true);
+-            return "profile";
+-        } else {
++        if (!result.hasErrors()) {
++            try {
+-            super.create(UserUtil.createNewFromTo(userTo));
+-            status.setComplete();
+-            return "redirect:login?message=app.registered";
++                super.create(UserUtil.createNewFromTo(userTo));
++                status.setComplete();
++                return "redirect:login?message=app.registered";
++            } catch (DataIntegrityViolationException ex) {
++                result.rejectValue("email", "exception.duplicate_email");
+-        }
++            }
++        }
++        model.addAttribute("register", true);
++        return "profile";
+     }
+ }
+Index: config/messages/app_ru.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- config/messages/app_ru.properties	(date 1479254274000)
++++ config/messages/app_ru.properties	(revision )
+@@ -41,4 +41,6 @@
+ common.enabled=Активирован
+ common.disabled=Деактивирован
+ common.failed=Ошибка
+-common.add=Добавить
+\ No newline at end of file
++common.add=Добавить
++
++exception.duplicate_email=Пользователь с такой e-почтой уже есть в приложении.
+\ No newline at end of file

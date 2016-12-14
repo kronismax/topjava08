@@ -1,0 +1,16 @@
+Index: src/main/java/ru/javawebinar/topjava/model/Meal.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/model/Meal.java	(revision 7d284b885234674d7b06557d54368ea90d06d4db)
++++ src/main/java/ru/javawebinar/topjava/model/Meal.java	(revision 1f8fd1e35411471229985744ef3b4f5d03b4f689)
+@@ -9,8 +9,6 @@
+  * 11.01.2015.
+  */
+ public class Meal extends BaseEntity {
+-    private Integer id;
+-
+     private final LocalDateTime dateTime;
+ 
+     private final String description;

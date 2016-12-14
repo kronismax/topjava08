@@ -1,0 +1,257 @@
+Index: src/main/java/ru/javawebinar/topjava/repository/datajpa/DataJpaUserRepositoryImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/repository/datajpa/DataJpaUserRepositoryImpl.java	(revision )
++++ src/main/java/ru/javawebinar/topjava/repository/datajpa/DataJpaUserRepositoryImpl.java	(revision )
+@@ -0,0 +1,47 @@
++package ru.javawebinar.topjava.repository.datajpa;
++
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.data.domain.Sort;
++import org.springframework.stereotype.Repository;
++import ru.javawebinar.topjava.model.User;
++import ru.javawebinar.topjava.repository.UserRepository;
++
++import java.util.List;
++
++/**
++ * GKislin
++ * 27.03.2015.
++ */
++
++@Repository
++public class DataJpaUserRepositoryImpl implements UserRepository {
++    private static final Sort SORT_NAME_EMAIL = new Sort("name", "email");
++
++    @Autowired
++    private CrudUserRepository crudRepository;
++
++    @Override
++    public User save(User user) {
++        return crudRepository.save(user);
++    }
++
++    @Override
++    public boolean delete(int id) {
++        return crudRepository.delete(id) != 0;
++    }
++
++    @Override
++    public User get(int id) {
++        return crudRepository.findOne(id);
++    }
++
++    @Override
++    public User getByEmail(String email) {
++        return crudRepository.getByEmail(email);
++    }
++
++    @Override
++    public List<User> getAll() {
++        return crudRepository.findAll(SORT_NAME_EMAIL);
++    }
++}
+Index: src/main/java/ru/javawebinar/topjava/repository/datajpa/CrudUserRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/repository/datajpa/CrudUserRepository.java	(revision )
++++ src/main/java/ru/javawebinar/topjava/repository/datajpa/CrudUserRepository.java	(revision )
+@@ -0,0 +1,37 @@
++package ru.javawebinar.topjava.repository.datajpa;
++
++import org.springframework.data.domain.Sort;
++import org.springframework.data.jpa.repository.JpaRepository;
++import org.springframework.data.jpa.repository.Modifying;
++import org.springframework.data.jpa.repository.Query;
++import org.springframework.data.repository.query.Param;
++import org.springframework.transaction.annotation.Transactional;
++import ru.javawebinar.topjava.model.User;
++
++import java.util.List;
++
++/**
++ * gkislin
++ * 02.10.2016
++ */
++@Transactional(readOnly = true)
++public interface CrudUserRepository extends JpaRepository<User, Integer> {
++    @Transactional
++    @Modifying
++//    @Query(name = User.DELETE)
++    @Query("DELETE FROM User u WHERE u.id=:id")
++    int delete(@Param("id") int id);
++
++    @Override
++    @Transactional
++    User save(User user);
++
++    @Override
++    User findOne(Integer id);
++
++    @Override
++    List<User> findAll(Sort sort);
++
++    User getByEmail(String email);
++
++}
+Index: src/main/java/ru/javawebinar/topjava/repository/datajpa/DataJpaMealRepositoryImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/repository/datajpa/DataJpaMealRepositoryImpl.java	(revision )
++++ src/main/java/ru/javawebinar/topjava/repository/datajpa/DataJpaMealRepositoryImpl.java	(revision )
+@@ -0,0 +1,45 @@
++package ru.javawebinar.topjava.repository.datajpa;
++
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.stereotype.Repository;
++import ru.javawebinar.topjava.model.Meal;
++import ru.javawebinar.topjava.repository.MealRepository;
++
++import java.time.LocalDateTime;
++import java.util.List;
++
++/**
++ * GKislin
++ * 27.03.2015.
++ */
++@Repository
++public class DataJpaMealRepositoryImpl implements MealRepository {
++
++    @Autowired
++    private CrudMealRepository crudRepository;
++
++    @Override
++    public Meal save(Meal Meal, int userId) {
++        return null;
++    }
++
++    @Override
++    public boolean delete(int id, int userId) {
++        return false;
++    }
++
++    @Override
++    public Meal get(int id, int userId) {
++        return null;
++    }
++
++    @Override
++    public List<Meal> getAll(int userId) {
++        return null;
++    }
++
++    @Override
++    public List<Meal> getBetween(LocalDateTime startDate, LocalDateTime endDate, int userId) {
++        return null;
++    }
++}
+Index: src/main/java/ru/javawebinar/topjava/repository/datajpa/CrudMealRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/repository/datajpa/CrudMealRepository.java	(revision )
++++ src/main/java/ru/javawebinar/topjava/repository/datajpa/CrudMealRepository.java	(revision )
+@@ -0,0 +1,11 @@
++package ru.javawebinar.topjava.repository.datajpa;
++
++import org.springframework.data.jpa.repository.JpaRepository;
++import ru.javawebinar.topjava.model.Meal;
++
++/**
++ * gkislin
++ * 02.10.2016
++ */
++public interface CrudMealRepository extends JpaRepository<Meal, Integer> {
++}
+Index: pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- pom.xml	(date 1475413164000)
++++ pom.xml	(revision )
+@@ -18,6 +18,7 @@
+ 
+         <tomcat.version>8.0.33</tomcat.version>
+         <spring.version>4.3.2.RELEASE</spring.version>
++        <spring-data-jpa.version>1.10.4.RELEASE</spring-data-jpa.version>
+ 
+         <!-- Logging -->
+         <logback.version>1.1.7</logback.version>
+@@ -93,9 +94,9 @@
+             </exclusions>
+         </dependency>
+         <dependency>
+-            <groupId>org.springframework</groupId>
+-            <artifactId>spring-orm</artifactId>
+-            <version>${spring.version}</version>
++            <groupId>org.springframework.data</groupId>
++            <artifactId>spring-data-jpa</artifactId>
++            <version>${spring-data-jpa.version}</version>
+         </dependency>
+ 
+         <dependency>
+@@ -181,5 +182,14 @@
+     </profiles>
+ 
+     <dependencyManagement>
++        <dependencies>
++            <dependency>
++                <groupId>org.springframework</groupId>
++                <artifactId>spring-framework-bom</artifactId>
++                <version>${spring.version}</version>
++                <type>pom</type>
++                <scope>import</scope>
++            </dependency>
++        </dependencies>
+     </dependencyManagement>
+ </project>
+Index: src/main/resources/spring/spring-db.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/resources/spring/spring-db.xml	(date 1475413164000)
++++ src/main/resources/spring/spring-db.xml	(revision )
+@@ -4,13 +4,18 @@
+        xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+        xmlns:tx="http://www.springframework.org/schema/tx"
++       xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+-       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
++       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
++       http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd">
+ 
+-    <context:component-scan base-package="ru.javawebinar.**.repository.jpa"/>
++    <!--<context:component-scan base-package="ru.javawebinar.**.repository.jpa"/>-->
+ 
++    <context:component-scan base-package="ru.javawebinar.**.repository.datajpa"/>
++    <jpa:repositories base-package="ru.javawebinar.**.repository.datajpa"/>
++
+     <jdbc:initialize-database data-source="dataSource" enabled="${database.init}">
+         <jdbc:script location="classpath:db/${jdbc.initLocation}"/>
+         <jdbc:script encoding="utf-8" location="classpath:db/populateDB.sql"/>
+@@ -74,5 +79,12 @@
+               p:url="${database.url}"
+               p:username="${database.username}"
+               p:password="${database.password}"/>
++    </beans>
++
++    <beans profile="jdbc">
++    </beans>
++    <beans profile="jpa">
++    </beans>
++    <beans profile="datajpa">
+     </beans>
+ </beans>
+\ No newline at end of file

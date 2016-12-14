@@ -1,0 +1,137 @@
+Index: src/test/resources/logback-test.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/resources/logback-test.xml	(date 1476045687000)
++++ src/test/resources/logback-test.xml	(revision )
+@@ -11,7 +11,7 @@
+         </encoder>
+     </appender>
+ 
+-    <logger name="org.springframework.jdbc" level="debug"/>
++    <!--<logger name="org.springframework.jdbc" level="debug"/>-->
+     <logger name="ru.javawebinar.topjava" level="debug"/>
+ 
+     <root level="WARN">
+\ No newline at end of file
+Index: src/main/java/ru/javawebinar/topjava/repository/datajpa/CrudMealRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/repository/datajpa/CrudMealRepository.java	(date 1476045687000)
++++ src/main/java/ru/javawebinar/topjava/repository/datajpa/CrudMealRepository.java	(revision )
+@@ -1,11 +1,35 @@
+ package ru.javawebinar.topjava.repository.datajpa;
+ 
+ import org.springframework.data.jpa.repository.JpaRepository;
++import org.springframework.data.jpa.repository.Modifying;
++import org.springframework.data.jpa.repository.Query;
++import org.springframework.data.repository.query.Param;
++import org.springframework.transaction.annotation.Transactional;
+ import ru.javawebinar.topjava.model.Meal;
+ 
++import java.time.LocalDateTime;
++import java.util.List;
++
+ /**
+  * gkislin
+  * 02.10.2016
+  */
++@Transactional(readOnly = true)
+ public interface CrudMealRepository extends JpaRepository<Meal, Integer> {
++
++    @Modifying
++    @Transactional
++    @Query("DELETE FROM Meal m WHERE m.id=:id AND m.user.id=:userId")
++    int delete(@Param("id") int id, @Param("userId") int userId);
++
++    @Override
++    Meal save(Meal item);
++
++    @Query("SELECT m FROM Meal m WHERE m.user.id=:userId ORDER BY m.dateTime DESC")
++    List<Meal> getAll(@Param("userId") int userId);
++
++    @SuppressWarnings("JpaQlInspection")
++    @Query("SELECT m from Meal m WHERE m.user.id=:userId AND m.dateTime BETWEEN :startDate AND :endDate ORDER BY m.dateTime DESC")
++    List<Meal> getBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, @Param("userId") int userId);
++
+ }
+Index: src/main/java/ru/javawebinar/topjava/repository/datajpa/DataJpaMealRepositoryImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/repository/datajpa/DataJpaMealRepositoryImpl.java	(date 1476045687000)
++++ src/main/java/ru/javawebinar/topjava/repository/datajpa/DataJpaMealRepositoryImpl.java	(revision )
+@@ -2,6 +2,7 @@
+ 
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.stereotype.Repository;
++import org.springframework.transaction.annotation.Transactional;
+ import ru.javawebinar.topjava.model.Meal;
+ import ru.javawebinar.topjava.repository.MealRepository;
+ 
+@@ -18,28 +19,37 @@
+     @Autowired
+     private CrudMealRepository crudRepository;
+ 
++    @Autowired
++    private CrudUserRepository crudUserRepository;
++
+     @Override
+-    public Meal save(Meal Meal, int userId) {
++    @Transactional
++    public Meal save(Meal meal, int userId) {
++        if (!meal.isNew() && get(meal.getId(), userId) == null) {
+-        return null;
+-    }
++            return null;
++        }
++        meal.setUser(crudUserRepository.getOne(userId));
++        return crudRepository.save(meal);
++    }
+ 
+     @Override
+     public boolean delete(int id, int userId) {
+-        return false;
++        return crudRepository.delete(id, userId) != 0;
+     }
+ 
+     @Override
+     public Meal get(int id, int userId) {
+-        return null;
++        Meal meal = crudRepository.findOne(id);
++        return meal != null && meal.getUser().getId() == userId ? meal : null;
+     }
+ 
+     @Override
+     public List<Meal> getAll(int userId) {
+-        return null;
++        return crudRepository.getAll(userId);
+     }
+ 
+     @Override
+     public List<Meal> getBetween(LocalDateTime startDate, LocalDateTime endDate, int userId) {
+-        return null;
++        return crudRepository.getBetween(startDate, endDate, userId);
+     }
+ }
+Index: src/main/resources/logback.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/resources/logback.xml	(date 1476045687000)
++++ src/main/resources/logback.xml	(revision )
+@@ -22,6 +22,9 @@
+ 
+     <logger name="ru.javawebinar.topjava" level="debug"/>
+ 
++    <!--log hibernate showSql-->
++    <logger name="org.hibernate.SQL" level="debug"/>
++
+     <root level="info">
+         <appender-ref ref="file"/>
+         <appender-ref ref="console"/>

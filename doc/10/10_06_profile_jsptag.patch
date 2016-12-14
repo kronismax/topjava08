@@ -1,0 +1,415 @@
+Index: src/main/webapp/WEB-INF/jsp/profile.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/profile.jsp	(revision )
++++ src/main/webapp/WEB-INF/jsp/profile.jsp	(revision )
+@@ -0,0 +1,49 @@
++<!DOCTYPE html>
++<%@page contentType="text/html" pageEncoding="UTF-8" %>
++<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
++<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
++<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
++<%@ taglib prefix="topjava" tagdir="/WEB-INF/tags" %>
++<%@ taglib prefix="fmt" uri="http://java.sun.com/jstl/fmt" %>
++
++<html>
++<jsp:include page="fragments/headTag.jsp"/>
++
++<body>
++<jsp:include page="fragments/bodyHeader.jsp"/>
++
++<div class="jumbotron">
++    <div class="container">
++        <div class="shadow">
++            <h2>${userTo.name} <fmt:message key="app.profile"/></h2>
++
++            <div class="view-box">
++                <form:form modelAttribute="userTo" class="form-horizontal" method="post" action="profile"
++                           charset="utf-8" accept-charset="UTF-8">
++
++                    <fmt:message key="users.name" var="userName"/>
++                    <topjava:inputField label='${userName}' name="name"/>
++
++                    <fmt:message key="users.email" var="userEmail"/>
++                    <topjava:inputField label='${userEmail}' name="email"/>
++
++                    <fmt:message key="users.password" var="userPassword"/>
++                    <topjava:inputField label='${userPassword}' name="password" inputType="password"/>
++
++                    <fmt:message key="users.caloriesPerDay" var="caloriesPerDay"/>
++                    <topjava:inputField label='${caloriesPerDay}' name="caloriesPerDay" inputType="number"/>
++
++                    <div class="form-group">
++                        <div class="col-xs-offset-2 col-xs-10">
++                            <button type="submit" class="btn btn-primary"><fmt:message key="common.update"/></button>
++                        </div>
++                    </div>
++                </form:form>
++            </div>
++        </div>
++    </div>
++</div>
++
++<jsp:include page="fragments/footer.jsp"/>
++</body>
++</html>
+Index: src/main/webapp/WEB-INF/tags/inputField.tag
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/tags/inputField.tag	(revision )
++++ src/main/webapp/WEB-INF/tags/inputField.tag	(revision )
+@@ -0,0 +1,23 @@
++<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
++<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
++<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
++
++<%@ attribute name="name" required="true" description="Name of corresponding property in bean object" %>
++<%@ attribute name="label" required="true" description="Field label" %>
++<%@ attribute name="inputType" required="false" description="Input type" %>
++
++<spring:bind path="${name}">
++    <c:set var="cssGroup" value="form-group ${status.error ? 'error' : '' }"/>
++    <div class="${cssGroup}">
++        <label class="control-label col-xs-2">${label}</label>
++
++        <div class="col-xs-8">
++            <c:choose>
++                <c:when test="${inputType == 'password'}"><form:password path="${name}"/></c:when>
++                <c:when test="${inputType == 'number'}"><form:input path="${name}" type="number"/></c:when>
++                <c:otherwise><form:input path="${name}"/></c:otherwise>
++            </c:choose>
++            &nbsp;<span class="help-inline">${status.errorMessage}</span>
++        </div>
++    </div>
++</spring:bind>
+\ No newline at end of file
+Index: src/main/java/ru/javawebinar/topjava/to/UserTo.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/to/UserTo.java	(date 1478702344000)
++++ src/main/java/ru/javawebinar/topjava/to/UserTo.java	(revision )
+@@ -79,6 +79,10 @@
+         return caloriesPerDay;
+     }
+ 
++    public void setCaloriesPerDay(Integer caloriesPerDay) {
++        this.caloriesPerDay = caloriesPerDay;
++    }
++
+     @Override
+     public String toString() {
+         return "UserTo{" +
+Index: src/test/java/ru/javawebinar/topjava/UserTestData.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/UserTestData.java	(date 1478702344000)
++++ src/test/java/ru/javawebinar/topjava/UserTestData.java	(revision )
+@@ -16,8 +16,8 @@
+     public static final int USER_ID = START_SEQ;
+     public static final int ADMIN_ID = START_SEQ + 1;
+ 
+-    public static final User USER = new User(USER_ID, "User", "user@yandex.ru", "password", Role.ROLE_USER);
+-    public static final User ADMIN = new User(ADMIN_ID, "Admin", "admin@gmail.com", "admin", Role.ROLE_ADMIN, Role.ROLE_USER);
++    public static final User USER = new User(USER_ID, "User", "user@yandex.ru", "password", 2005, Role.ROLE_USER);
++    public static final User ADMIN = new User(ADMIN_ID, "Admin", "admin@gmail.com", "admin", 1900, Role.ROLE_ADMIN, Role.ROLE_USER);
+ 
+     public static final ModelMatcher<User> MATCHER = ModelMatcher.of(User.class,
+             (expected, actual) -> expected == actual ||
+\ No newline at end of file
+Index: config/messages/app_ru.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- config/messages/app_ru.properties	(date 1478702344000)
++++ config/messages/app_ru.properties	(revision )
+@@ -14,6 +14,7 @@
+ users.active=Активный
+ users.registered=Зарегистрирован
+ users.password=Пароль
++users.caloriesPerDay=Калорий в день
+ 
+ meals.title=Список еды
+ meals.edit=Редактировать еду
+\ No newline at end of file
+Index: config/messages/app.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- config/messages/app.properties	(date 1478702344000)
++++ config/messages/app.properties	(revision )
+@@ -14,6 +14,7 @@
+ users.active=Active
+ users.registered=Registered
+ users.password=Password
++users.caloriesPerDay=Calories per day
+ 
+ meals.title=Meals list
+ meals.edit=Edit meal
+\ No newline at end of file
+Index: src/test/java/ru/javawebinar/topjava/web/user/ProfileRestControllerTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/web/user/ProfileRestControllerTest.java	(date 1478702344000)
++++ src/test/java/ru/javawebinar/topjava/web/user/ProfileRestControllerTest.java	(revision )
+@@ -3,8 +3,9 @@
+ import org.junit.Test;
+ import org.springframework.http.MediaType;
+ import ru.javawebinar.topjava.TestUtil;
+-import ru.javawebinar.topjava.model.Role;
+ import ru.javawebinar.topjava.model.User;
++import ru.javawebinar.topjava.to.UserTo;
++import ru.javawebinar.topjava.util.UserUtil;
+ import ru.javawebinar.topjava.web.AbstractControllerTest;
+ import ru.javawebinar.topjava.web.json.JsonUtil;
+ 
+@@ -45,13 +46,14 @@
+ 
+     @Test
+     public void testUpdate() throws Exception {
+-        User updated = new User(USER_ID, "newName", "newemail@ya.ru", "newPassword", Role.ROLE_USER);
++        UserTo updatedTo = new UserTo(null, "newName", "newemail@ya.ru", "newPassword", 1500);
++
+         mockMvc.perform(put(REST_URL).contentType(MediaType.APPLICATION_JSON)
+                 .with(userHttpBasic(USER))
+-                .content(JsonUtil.writeValue(updated)))
++                .content(JsonUtil.writeValue(updatedTo)))
+                 .andDo(print())
+                 .andExpect(status().isOk());
+ 
+-        MATCHER.assertEquals(updated, new User(userService.getByEmail("newemail@ya.ru")));
++        MATCHER.assertEquals(UserUtil.updateFromTo(new User(USER), updatedTo), userService.getByEmail("newemail@ya.ru"));
+     }
+ }
+\ No newline at end of file
+Index: src/main/java/ru/javawebinar/topjava/AuthorizedUser.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/AuthorizedUser.java	(date 1478702344000)
++++ src/main/java/ru/javawebinar/topjava/AuthorizedUser.java	(revision )
+@@ -15,7 +15,7 @@
+ public class AuthorizedUser extends org.springframework.security.core.userdetails.User {
+     private static final long serialVersionUID = 1L;
+ 
+-    private final UserTo userTo;
++    private UserTo userTo;
+ 
+     public AuthorizedUser(User user) {
+         super(user.getEmail(), user.getPassword(), user.isEnabled(), true, true, true, user.getRoles());
+@@ -43,6 +43,10 @@
+ 
+     public static int getCaloriesPerDay() {
+         return get().userTo.getCaloriesPerDay();
++    }
++
++    public void update(UserTo newTo) {
++        userTo = newTo;
+     }
+ 
+     public UserTo getUserTo() {
+Index: src/main/java/ru/javawebinar/topjava/util/UserUtil.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/util/UserUtil.java	(date 1478702344000)
++++ src/main/java/ru/javawebinar/topjava/util/UserUtil.java	(revision )
+@@ -12,7 +12,7 @@
+     public static final int DEFAULT_CALORIES_PER_DAY = 2000;
+ 
+     public static User createNewFromTo(UserTo newUser) {
+-        return new User(null, newUser.getName(), newUser.getEmail().toLowerCase(), newUser.getPassword(), Role.ROLE_USER);
++        return new User(null, newUser.getName(), newUser.getEmail().toLowerCase(), newUser.getPassword(), newUser.getCaloriesPerDay(), Role.ROLE_USER);
+     }
+ 
+     public static UserTo asTo(User user) {
+@@ -22,6 +22,7 @@
+     public static User updateFromTo(User user, UserTo userTo) {
+         user.setName(userTo.getName());
+         user.setEmail(userTo.getEmail().toLowerCase());
++        user.setCaloriesPerDay(userTo.getCaloriesPerDay());
+         user.setPassword(userTo.getPassword());
+         return user;
+     }
+Index: src/test/java/ru/javawebinar/topjava/service/AbstractUserServiceTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/service/AbstractUserServiceTest.java	(date 1478702344000)
++++ src/test/java/ru/javawebinar/topjava/service/AbstractUserServiceTest.java	(revision )
+@@ -35,7 +35,7 @@
+ 
+     @Test(expected = DataAccessException.class)
+     public void testDuplicateMailSave() throws Exception {
+-        service.save(new User(null, "Duplicate", "user@yandex.ru", "newPass", Role.ROLE_USER));
++        service.save(new User(null, "Duplicate", "user@yandex.ru", "newPass", 2000, Role.ROLE_USER));
+     }
+ 
+     @Test
+\ No newline at end of file
+Index: src/main/java/ru/javawebinar/topjava/web/RootController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/web/RootController.java	(date 1478702344000)
++++ src/main/java/ru/javawebinar/topjava/web/RootController.java	(revision )
+@@ -3,24 +3,28 @@
+ import org.springframework.security.access.prepost.PreAuthorize;
+ import org.springframework.stereotype.Controller;
+ import org.springframework.ui.ModelMap;
+-import org.springframework.web.bind.annotation.GetMapping;
+-import org.springframework.web.bind.annotation.RequestMapping;
+-import org.springframework.web.bind.annotation.RequestMethod;
+-import org.springframework.web.bind.annotation.RequestParam;
++import org.springframework.validation.BindingResult;
++import org.springframework.web.bind.annotation.*;
++import org.springframework.web.bind.support.SessionStatus;
++import ru.javawebinar.topjava.AuthorizedUser;
++import ru.javawebinar.topjava.to.UserTo;
++import ru.javawebinar.topjava.web.user.AbstractUserController;
+ 
++import javax.validation.Valid;
++
+ /**
+  * User: gkislin
+  * Date: 22.08.2014
+  */
+ @Controller
+-public class RootController {
++public class RootController extends AbstractUserController {
+ 
+     @GetMapping("/")
+     public String root() {
+         return "redirect:meals";
+     }
+ 
+-//    @Secured("ROLE_ADMIN")
++    //    @Secured("ROLE_ADMIN")
+     @PreAuthorize("hasRole('ROLE_ADMIN')")
+     @GetMapping("/users")
+     public String users() {
+@@ -39,5 +43,23 @@
+     @GetMapping("/meals")
+     public String meals() {
+         return "meals";
++    }
++
++    @GetMapping("/profile")
++    public String profile() {
++        return "profile";
++    }
++
++    @PostMapping("/profile")
++    public String updateProfile(@Valid UserTo userTo, BindingResult result, SessionStatus status) {
++        if (result.hasErrors()) {
++            return "profile";
++        } else {
++            userTo.setId(AuthorizedUser.id());
++            super.update(userTo);
++            AuthorizedUser.get().update(userTo);
++            status.setComplete();
++            return "redirect:meals";
++        }
+     }
+ }
+Index: src/test/java/ru/javawebinar/topjava/web/user/AdminRestControllerTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/web/user/AdminRestControllerTest.java	(date 1478702344000)
++++ src/test/java/ru/javawebinar/topjava/web/user/AdminRestControllerTest.java	(revision )
+@@ -81,7 +81,7 @@
+ 
+     @Test
+     public void testCreate() throws Exception {
+-        User expected = new User(null, "New", "new@gmail.com", "newPass", Role.ROLE_USER, Role.ROLE_ADMIN);
++        User expected = new User(null, "New", "new@gmail.com", "newPass", 2300, Role.ROLE_USER, Role.ROLE_ADMIN);
+         ResultActions action = mockMvc.perform(post(REST_URL)
+                 .contentType(MediaType.APPLICATION_JSON)
+                 .with(userHttpBasic(ADMIN))
+\ No newline at end of file
+Index: src/main/java/ru/javawebinar/topjava/model/User.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/model/User.java	(date 1478702344000)
++++ src/main/java/ru/javawebinar/topjava/model/User.java	(revision )
+@@ -74,8 +74,8 @@
+         this(u.getId(), u.getName(), u.getEmail(), u.getPassword(), u.getCaloriesPerDay(), u.isEnabled(), u.getRoles());
+     }
+ 
+-    public User(Integer id, String name, String email, String password, Role role, Role... roles) {
+-        this(id, name, email, password, UserUtil.DEFAULT_CALORIES_PER_DAY, true, EnumSet.of(role, roles));
++    public User(Integer id, String name, String email, String password, int caloriesPerDay, Role role, Role... roles) {
++        this(id, name, email, password, caloriesPerDay, true, EnumSet.of(role, roles));
+     }
+ 
+     public User(Integer id, String name, String email, String password, int caloriesPerDay, boolean enabled, Set<Role> roles) {
+Index: src/main/resources/db/populateDB.sql
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/resources/db/populateDB.sql	(date 1478702344000)
++++ src/main/resources/db/populateDB.sql	(revision )
+@@ -10,11 +10,11 @@
+ 
+ ALTER SEQUENCE global_seq RESTART WITH 100000;
+ 
+-INSERT INTO users (name, email, password)
+-VALUES ('User', 'user@yandex.ru', 'password');
++INSERT INTO users (name, email, password, calories_per_day)
++VALUES ('User', 'user@yandex.ru', 'password', 2005);
+ 
+-INSERT INTO users (name, email, password)
+-VALUES ('Admin', 'admin@gmail.com', 'admin');
++INSERT INTO users (name, email, password, calories_per_day)
++VALUES ('Admin', 'admin@gmail.com', 'admin', 1900);
+ 
+ INSERT INTO user_roles (role, user_id) VALUES
+   ('ROLE_USER', 100000),
+Index: src/main/java/ru/javawebinar/topjava/web/user/ProfileRestController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/web/user/ProfileRestController.java	(date 1478702344000)
++++ src/main/java/ru/javawebinar/topjava/web/user/ProfileRestController.java	(revision )
+@@ -4,6 +4,7 @@
+ import org.springframework.web.bind.annotation.*;
+ import ru.javawebinar.topjava.AuthorizedUser;
+ import ru.javawebinar.topjava.model.User;
++import ru.javawebinar.topjava.to.UserTo;
+ 
+ /**
+  * GKislin
+@@ -25,8 +26,9 @@
+     }
+ 
+     @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+-    public void update(@RequestBody User user) {
+-        super.update(user, AuthorizedUser.id());
++    public void update(@RequestBody UserTo userTo) {
++        userTo.setId(AuthorizedUser.id());
++        super.update(userTo);
+     }
+ 
+     @GetMapping(value = "/text")
+\ No newline at end of file

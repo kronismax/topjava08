@@ -1,0 +1,103 @@
+Index: src/main/java/ru/javawebinar/topjava/web/meal/JspMealController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/web/meal/JspMealController.java	(revision f5494b97f8ff896d03ac782e4483c92a36298aef)
++++ src/main/java/ru/javawebinar/topjava/web/meal/JspMealController.java	(revision )
+@@ -44,15 +44,15 @@
+     @PostMapping
+     public String updateOrCreate(HttpServletRequest request) {
+         String id = request.getParameter("id");
+-        Meal userMeal = new Meal(id.isEmpty() ? null : Integer.valueOf(id),
++        Meal meal = new Meal(id.isEmpty() ? null : Integer.valueOf(id),
+                 LocalDateTime.parse(request.getParameter("dateTime")),
+                 request.getParameter("description"),
+                 Integer.valueOf(request.getParameter("calories")));
+ 
+-        if (userMeal.isNew()) {
+-            super.create(userMeal);
++        if (meal.isNew()) {
++            super.create(meal);
+         } else {
+-            super.update(userMeal, userMeal.getId());
++            super.update(meal, meal.getId());
+         }
+         return "redirect:/meals";
+     }
+Index: src/test/java/ru/javawebinar/topjava/web/json/JsonUtilTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/web/json/JsonUtilTest.java	(revision f5494b97f8ff896d03ac782e4483c92a36298aef)
++++ src/test/java/ru/javawebinar/topjava/web/json/JsonUtilTest.java	(revision )
+@@ -16,15 +16,15 @@
+     public void testReadWriteValue() throws Exception {
+         String json = JsonUtil.writeValue(MealTestData.ADMIN_MEAL1);
+         System.out.println(json);
+-        Meal userMeal = JsonUtil.readValue(json, Meal.class);
+-        MealTestData.MATCHER.assertEquals(MealTestData.ADMIN_MEAL1, userMeal);
++        Meal meal = JsonUtil.readValue(json, Meal.class);
++        MealTestData.MATCHER.assertEquals(MealTestData.ADMIN_MEAL1, meal);
+     }
+ 
+     @Test
+     public void testReadWriteValues() throws Exception {
+         String json = JsonUtil.writeValue(MealTestData.MEALS);
+         System.out.println(json);
+-        List<Meal> userMeals = JsonUtil.readValues(json, Meal.class);
+-        MealTestData.MATCHER.assertCollectionEquals(MealTestData.MEALS, userMeals);
++        List<Meal> meal = JsonUtil.readValues(json, Meal.class);
++        MealTestData.MATCHER.assertCollectionEquals(MealTestData.MEALS, meal);
+     }
+ }
+\ No newline at end of file
+Index: src/main/resources/db/populateDB.sql
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/resources/db/populateDB.sql	(revision f5494b97f8ff896d03ac782e4483c92a36298aef)
++++ src/main/resources/db/populateDB.sql	(revision )
+@@ -1,6 +1,5 @@
+-DELETE FROM user_roles;
+-DELETE FROM meals;
+-DELETE FROM users;
++-- http://stackoverflow.com/questions/13223820/postgresql-delete-all-content
++TRUNCATE users CASCADE;
+ ALTER SEQUENCE global_seq RESTART WITH 100000;
+ 
+ INSERT INTO users (name, email, password)
+Index: src/test/java/ru/javawebinar/topjava/repository/mock/InMemoryMealRepositoryImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/repository/mock/InMemoryMealRepositoryImpl.java	(revision f5494b97f8ff896d03ac782e4483c92a36298aef)
++++ src/test/java/ru/javawebinar/topjava/repository/mock/InMemoryMealRepositoryImpl.java	(revision )
+@@ -61,7 +61,7 @@
+     @Override
+     public Collection<Meal> getBetween(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId) {
+         return getAllStream(userId)
+-                .filter(um -> TimeUtil.isBetween(um.getDateTime(), startDateTime, endDateTime))
++                .filter(m -> TimeUtil.isBetween(m.getDateTime(), startDateTime, endDateTime))
+                 .collect(Collectors.toList());
+     }
+ 
+Index: src/main/java/ru/javawebinar/topjava/model/BaseEntity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/model/BaseEntity.java	(revision f5494b97f8ff896d03ac782e4483c92a36298aef)
++++ src/main/java/ru/javawebinar/topjava/model/BaseEntity.java	(revision )
+@@ -46,7 +46,7 @@
+ 
+     @Override
+     public boolean isNew() {
+-        return (this.id == null);
++        return (getId() == null);
+     }
+ 
+     @Override

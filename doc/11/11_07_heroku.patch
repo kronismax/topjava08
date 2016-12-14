@@ -1,0 +1,310 @@
+Index: src/test/java/ru/javawebinar/topjava/web/user/HerokuRestControllerTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/web/user/HerokuRestControllerTest.java	(revision )
++++ src/test/java/ru/javawebinar/topjava/web/user/HerokuRestControllerTest.java	(revision )
+@@ -0,0 +1,62 @@
++package ru.javawebinar.topjava.web.user;
++
++import org.junit.Test;
++import org.springframework.core.env.PropertySource;
++import org.springframework.core.io.ClassPathResource;
++import org.springframework.core.io.Resource;
++import org.springframework.core.io.support.ResourcePropertySource;
++import org.springframework.http.MediaType;
++import org.springframework.test.context.ActiveProfiles;
++import ru.javawebinar.topjava.web.AbstractControllerTest;
++import ru.javawebinar.topjava.web.json.JsonUtil;
++
++import java.io.IOException;
++
++import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
++import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
++import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
++import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
++import static ru.javawebinar.topjava.Profiles.DB_IMPLEMENTATION;
++import static ru.javawebinar.topjava.Profiles.HEROKU;
++import static ru.javawebinar.topjava.TestUtil.userHttpBasic;
++import static ru.javawebinar.topjava.UserTestData.*;
++
++@ActiveProfiles({HEROKU, DB_IMPLEMENTATION})
++public class HerokuRestControllerTest extends AbstractControllerTest {
++
++    private static final String REST_URL = AdminRestController.REST_URL + '/';
++
++    // Set DATABASE_URL environment for heroku profile
++    static {
++        Resource resource = new ClassPathResource("db/postgres.properties");
++        try {
++            PropertySource propertySource = new ResourcePropertySource(resource);
++            String herokuDbUrl = String.format("postgres://%s:%s@%s",
++                    propertySource.getProperty("database.username"),
++                    propertySource.getProperty("database.password"),
++                    ((String) propertySource.getProperty("database.url")).substring(18));
++            System.out.println(herokuDbUrl);
++
++            System.setProperty("DATABASE_URL", herokuDbUrl);
++        } catch (IOException e) {
++            throw new IllegalStateException(e);
++        }
++    }
++
++    @Test
++    public void testDelete() throws Exception {
++        mockMvc.perform(delete(REST_URL + USER_ID)
++                .with(userHttpBasic(ADMIN)))
++                .andDo(print())
++                .andExpect(status().is5xxServerError());
++    }
++
++    @Test
++    public void testUpdate() throws Exception {
++        mockMvc.perform(put(REST_URL + USER_ID)
++                .contentType(MediaType.APPLICATION_JSON)
++                .with(userHttpBasic(ADMIN))
++                .content(JsonUtil.writeValue(USER)))
++                .andExpect(status().is5xxServerError());
++    }
++}
+\ No newline at end of file
+Index: system.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>NATIVE_TO_ASCII_UTF-8
+===================================================================
+--- system.properties	(revision )
++++ system.properties	(revision )
+@@ -0,0 +1,1 @@
++java.runtime.version=1.8
+\ No newline at end of file
+Index: settings.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- settings.xml	(revision )
++++ settings.xml	(revision )
+@@ -0,0 +1,11 @@
++<?xml version="1.0" encoding="UTF-8"?>
++
++<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
++          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
++
++    <activeProfiles>
++        <activeProfile>postgres</activeProfile>
++        <activeProfile>heroku</activeProfile>
++    </activeProfiles>
++</settings>
+Index: src/main/resources/db/heroku.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>NATIVE_TO_ASCII_UTF-8
+===================================================================
+--- src/main/resources/db/heroku.properties	(revision )
++++ src/main/resources/db/heroku.properties	(revision )
+@@ -0,0 +1,5 @@
++jpa.showSql=false
++hibernate.format_sql=false
++hibernate.use_sql_comments=false
++database.init=false
++jdbc.initLocation=initDB.sql
+\ No newline at end of file
+Index: Procfile
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Procfile	(revision )
++++ Procfile	(revision )
+@@ -0,0 +1,1 @@
++web:    java $JAVA_OPTS -Dspring.profiles.active="datajpa,heroku" -DTOPJAVA_ROOT="." -jar target/dependency/webapp-runner.jar --port $PORT target/*.war
+\ No newline at end of file
+Index: hr.bat
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- hr.bat	(revision )
++++ hr.bat	(revision )
+@@ -0,0 +1,2 @@
++call mvn -B -s settings.xml -DskipTests=true clean package
++call java -Dspring.profiles.active="datajpa,heroku" -DDATABASE_URL="postgres://user:password@localhost:5432/topjava" -jar target/dependency/webapp-runner.jar target/*.war
+\ No newline at end of file
+Index: pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- pom.xml	(date 1479306953000)
++++ pom.xml	(revision )
+@@ -362,6 +362,36 @@
+                 <activeByDefault>true</activeByDefault>
+             </activation>
+         </profile>
++        <profile>
++            <id>heroku</id>
++            <build>
++                <plugins>
++                    <plugin>
++                        <groupId>org.apache.maven.plugins</groupId>
++                        <artifactId>maven-dependency-plugin</artifactId>
++                        <version>2.10</version>
++                        <executions>
++                            <execution>
++                                <phase>package</phase>
++                                <goals>
++                                    <goal>copy</goal>
++                                </goals>
++                                <configuration>
++                                    <artifactItems>
++                                        <artifactItem>
++                                            <groupId>com.github.jsimone</groupId>
++                                            <artifactId>webapp-runner</artifactId>
++                                            <version>8.0.33.1</version>
++                                            <destFileName>webapp-runner.jar</destFileName>
++                                        </artifactItem>
++                                    </artifactItems>
++                                </configuration>
++                            </execution>
++                        </executions>
++                    </plugin>
++                </plugins>
++            </build>
++        </profile>
+     </profiles>
+ 
+     <dependencyManagement>
+Index: src/main/java/ru/javawebinar/topjava/web/user/AbstractUserController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/web/user/AbstractUserController.java	(date 1479306953000)
++++ src/main/java/ru/javawebinar/topjava/web/user/AbstractUserController.java	(revision )
+@@ -1,12 +1,17 @@
+ package ru.javawebinar.topjava.web.user;
+ 
+-import org.springframework.beans.factory.annotation.Autowired;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.core.env.Environment;
++import ru.javawebinar.topjava.Profiles;
++import ru.javawebinar.topjava.model.BaseEntity;
+ import ru.javawebinar.topjava.model.User;
+ import ru.javawebinar.topjava.service.UserService;
+ import ru.javawebinar.topjava.to.UserTo;
+ 
++import javax.validation.ValidationException;
++import java.util.Arrays;
+ import java.util.List;
+ 
+ /**
+@@ -18,6 +23,19 @@
+     @Autowired
+     private UserService service;
+ 
++    private boolean systemUserForbiddenModification;
++
++    @Autowired
++    public void setEnvironment(Environment environment) {
++        systemUserForbiddenModification = Arrays.asList(environment.getActiveProfiles()).contains(Profiles.HEROKU);
++    }
++
++    public void checkModificationAllowed(Integer id) {
++        if (systemUserForbiddenModification && id < BaseEntity.START_SEQ + 2) {
++            throw new ValidationException("Admin/User modification is not allowed. <br><br><a class=\"btn btn-primary btn-lg\" role=\"button\" href=\"register\">Register &raquo;</a> your own please.");
++        }
++    }
++
+     public List<User> getAll() {
+         log.info("getAll");
+         return service.getAll();
+@@ -35,17 +53,20 @@
+     }
+ 
+     public void delete(int id) {
++        checkModificationAllowed(id);
+         log.info("delete " + id);
+         service.delete(id);
+     }
+ 
+     public void update(User user, int id) {
++        checkModificationAllowed(id);
+         user.setId(id);
+         log.info("update " + user);
+         service.update(user);
+     }
+ 
+     public void update(UserTo userTo) {
++        checkModificationAllowed(userTo.getId());
+         log.info("update " + userTo);
+         service.update(userTo);
+     }
+@@ -56,6 +77,7 @@
+     }
+ 
+     public void enable(int id, boolean enabled) {
++        checkModificationAllowed(id);
+         log.info((enabled ? "enable " : "disable ") + id);
+         service.enable(id, enabled);
+     }
+Index: src/main/resources/spring/spring-db.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/resources/spring/spring-db.xml	(date 1479306953000)
++++ src/main/resources/spring/spring-db.xml	(revision )
+@@ -66,6 +66,30 @@
+         </bean>
+     </beans>
+ 
++    <beans profile="heroku">
++        <context:property-placeholder location="classpath:/db/heroku.properties" system-properties-mode="OVERRIDE"/>
++
++        <bean class="java.net.URI" id="dbUrl">
++            <constructor-arg value="${DATABASE_URL}"/>
++        </bean>
++        <bean id="dataSource"
++              class="org.apache.tomcat.jdbc.pool.DataSource"
++              p:url="#{ 'jdbc:postgresql://' + @dbUrl.getHost() + @dbUrl.getPath() }"
++              p:username="#{ @dbUrl.getUserInfo().split(':')[0] }"
++              p:password="#{ @dbUrl.getUserInfo().split(':')[1] }"
++              p:driverClassName="org.postgresql.Driver"
++              p:validationQuery="SELECT 1 FROM users"
++              p:maxActive="10"
++              p:minIdle="2"
++              p:maxWait="20000"
++              p:initialSize="2"
++              p:maxIdle="5"
++              p:testOnBorrow="true"
++              p:removeAbandoned="true"
++              p:testOnConnect="true"
++              p:testWhileIdle="true"/>
++    </beans>
++
+     <beans profile="jpa,datajpa">
+         <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
+               p:dataSource-ref="dataSource"
+\ No newline at end of file
+Index: src/main/java/ru/javawebinar/topjava/Profiles.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/Profiles.java	(date 1479306953000)
++++ src/main/java/ru/javawebinar/topjava/Profiles.java	(revision )
+@@ -10,7 +10,8 @@
+             HSQLDB = "hsqldb",
+             JDBC = "jdbc",
+             JPA = "jpa",
+-            DATAJPA = "datajpa";
++            DATAJPA = "datajpa",
++            HEROKU = "heroku";
+ 
+     public static final String ACTIVE_DB = POSTGRES;
+     public static final String DB_IMPLEMENTATION = DATAJPA;

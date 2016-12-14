@@ -1,0 +1,80 @@
+Index: src/main/webapp/resources/js/datatablesUtil.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/resources/js/datatablesUtil.js	(date 1477524551000)
++++ src/main/webapp/resources/js/datatablesUtil.js	(revision )
+@@ -7,6 +7,10 @@
+         save();
+         return false;
+     });
++
++    $(document).ajaxError(function (event, jqXHR, options, jsExc) {
++        failNoty(event, jqXHR, options, jsExc);
++    });
+ }
+ 
+ function add() {
+@@ -20,6 +24,7 @@
+         type: 'DELETE',
+         success: function () {
+             updateTable();
++            successNoty('Deleted');
+         }
+     });
+ }
+@@ -43,6 +48,35 @@
+         success: function () {
+             $('#editRow').modal('hide');
+             updateTable();
++            successNoty('Saved');
+         }
++    });
++}
++
++var failedNote;
++
++function closeNoty() {
++    if (failedNote) {
++        failedNote.close();
++        failedNote = undefined;
++    }
++}
++
++function successNoty(text) {
++    closeNoty();
++    noty({
++        text: text,
++        type: 'success',
++        layout: 'bottomRight',
++        timeout: true
++    });
++}
++
++function failNoty(event, jqXHR, options, jsExc) {
++    closeNoty();
++    failedNote = noty({
++        text: 'Failed: ' + jqXHR.statusText + "<br>",
++        type: 'error',
++        layout: 'bottomRight'
+     });
+-}
+\ No newline at end of file
++}
+Index: src/main/webapp/WEB-INF/jsp/users.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/users.jsp	(date 1477524551000)
++++ src/main/webapp/WEB-INF/jsp/users.jsp	(revision )
+@@ -100,6 +100,7 @@
+ <script type="text/javascript" src="webjars/jquery/2.2.4/jquery.min.js"></script>
+ <script type="text/javascript" src="webjars/bootstrap/3.3.7-1/js/bootstrap.min.js"></script>
+ <script type="text/javascript" src="webjars/datatables/1.10.12/js/jquery.dataTables.min.js"></script>
++<script type="text/javascript" src="webjars/noty/2.3.8/js/noty/packaged/jquery.noty.packaged.min.js"></script>
+ <script type="text/javascript" src="resources/js/datatablesUtil.js"></script>
+ <script type="text/javascript">
+ 
+\ No newline at end of file

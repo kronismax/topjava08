@@ -1,0 +1,128 @@
+Index: src/main/webapp/WEB-INF/jsp/meals.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/meals.jsp	(date 1477943351000)
++++ src/main/webapp/WEB-INF/jsp/meals.jsp	(revision )
+@@ -147,29 +147,29 @@
+     }
+ 
+     $(function () {
+-        datatableApi = $('#datatable').dataTable({
+-            "bPaginate": false,
+-            "bInfo": true,
+-            "aoColumns": [
++        datatableApi = $('#datatable').DataTable({
++            "paging": false,
++            "info": true,
++            "columns": [
+                 {
+-                    "mData": "dateTime"
++                    "data": "dateTime"
+                 },
+                 {
+-                    "mData": "description"
++                    "data": "description"
+                 },
+                 {
+-                    "mData": "calories"
++                    "data": "calories"
+                 },
+                 {
+-                    "sDefaultContent": "<fmt:message key="common.update"/>",
+-                    "bSortable": false
++                    "defaultContent": "<fmt:message key="common.update"/>",
++                    "orderable": false
+                 },
+                 {
+-                    "sDefaultContent": "<fmt:message key="common.delete"/>",
+-                    "bSortable": false
++                    "defaultContent": "<fmt:message key="common.delete"/>",
++                    "orderable": false
+                 }
+             ],
+-            "aaSorting": [
++            "order": [
+                 [
+                     0,
+                     "desc"
+\ No newline at end of file
+Index: src/main/webapp/resources/js/datatablesUtil.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/resources/js/datatablesUtil.js	(date 1477943351000)
++++ src/main/webapp/resources/js/datatablesUtil.js	(revision )
+@@ -37,11 +37,7 @@
+ }
+ 
+ function updateTableByData(data) {
+-    datatableApi.fnClearTable();
+-    $.each(data, function (key, item) {
+-        datatableApi.fnAddData(item);
+-    });
+-    datatableApi.fnDraw();
++    datatableApi.clear().rows.add(data).draw();
+ }
+ 
+ function save() {
+Index: src/main/webapp/WEB-INF/jsp/users.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/users.jsp	(date 1477943351000)
++++ src/main/webapp/WEB-INF/jsp/users.jsp	(revision )
+@@ -113,35 +113,35 @@
+ 
+     // $(document).ready(function () {
+     $(function () {
+-        datatableApi = $('#datatable').dataTable({
+-            "bPaginate": false,
+-            "bInfo": false,
+-            "aoColumns": [
++        datatableApi = $('#datatable').DataTable({
++            "paging": false,
++            "info": true,
++            "columns": [
+                 {
+-                    "mData": "name"
++                    "data": "name"
+                 },
+                 {
+-                    "mData": "email"
++                    "data": "email"
+                 },
+                 {
+-                    "mData": "roles"
++                    "data": "roles"
+                 },
+                 {
+-                    "mData": "enabled"
++                    "data": "enabled"
+                 },
+                 {
+-                    "mData": "registered"
++                    "data": "registered"
+                 },
+                 {
+-                    "sDefaultContent": "<fmt:message key="common.update"/>",
+-                    "bSortable": false
++                    "defaultContent": "<fmt:message key="common.update"/>",
++                    "orderable": false
+                 },
+                 {
+-                    "sDefaultContent": "<fmt:message key="common.delete"/>",
+-                    "bSortable": false
++                    "defaultContent": "<fmt:message key="common.delete"/>",
++                    "orderable": false
+                 }
+             ],
+-            "aaSorting": [
++            "order": [
+                 [
+                     0,
+                     "asc"
+\ No newline at end of file

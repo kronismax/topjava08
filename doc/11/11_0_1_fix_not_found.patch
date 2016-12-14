@@ -1,0 +1,90 @@
+Index: src/main/java/ru/javawebinar/topjava/web/ExceptionInfoHandler.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/web/ExceptionInfoHandler.java	(date 1478754552000)
++++ src/main/java/ru/javawebinar/topjava/web/ExceptionInfoHandler.java	(revision )
+@@ -20,7 +20,8 @@
+ public class ExceptionInfoHandler {
+     Logger LOG = LoggerFactory.getLogger(ExceptionInfoHandler.class);
+ 
+-    @ResponseStatus(HttpStatus.NOT_FOUND)
++//  http://stackoverflow.com/a/22358422/548473
++    @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY)
+     @ExceptionHandler(NotFoundException.class)
+     @ResponseBody
+     @Order(Ordered.HIGHEST_PRECEDENCE)
+Index: src/test/java/ru/javawebinar/topjava/web/user/AdminRestControllerTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/web/user/AdminRestControllerTest.java	(date 1478754552000)
++++ src/test/java/ru/javawebinar/topjava/web/user/AdminRestControllerTest.java	(revision )
+@@ -38,7 +38,7 @@
+     public void testGetNotFound() throws Exception {
+         mockMvc.perform(get(REST_URL + 1)
+                 .with(TestUtil.userHttpBasic(ADMIN)))
+-                .andExpect(status().isNotFound())
++                .andExpect(status().isUnprocessableEntity())
+                 .andDo(print());
+     }
+ 
+@@ -64,7 +64,7 @@
+     public void testDeleteNotFound() throws Exception {
+         mockMvc.perform(delete(REST_URL + 1)
+                 .with(TestUtil.userHttpBasic(ADMIN)))
+-                .andExpect(status().isNotFound())
++                .andExpect(status().isUnprocessableEntity())
+                 .andDo(print());
+     }
+ 
+\ No newline at end of file
+Index: src/main/java/ru/javawebinar/topjava/util/exception/NotFoundException.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/util/exception/NotFoundException.java	(date 1478754552000)
++++ src/main/java/ru/javawebinar/topjava/util/exception/NotFoundException.java	(revision )
+@@ -1,13 +1,9 @@
+ package ru.javawebinar.topjava.util.exception;
+ 
+-import org.springframework.http.HttpStatus;
+-import org.springframework.web.bind.annotation.ResponseStatus;
+-
+ /**
+  * User: gkislin
+  * Date: 19.08.2014
+  */
+-@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "No data found")  // 404
+ public class NotFoundException extends RuntimeException {
+     public NotFoundException(String message) {
+         super(message);
+Index: src/test/java/ru/javawebinar/topjava/web/meal/MealRestControllerTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/web/meal/MealRestControllerTest.java	(date 1478754552000)
++++ src/test/java/ru/javawebinar/topjava/web/meal/MealRestControllerTest.java	(revision )
+@@ -52,7 +52,7 @@
+     public void testGetNotFound() throws Exception {
+         mockMvc.perform(get(REST_URL + ADMIN_MEAL_ID)
+                 .with(userHttpBasic(USER)))
+-                .andExpect(status().isNotFound());
++                .andExpect(status().isUnprocessableEntity());
+     }
+ 
+     @Test
+@@ -60,7 +60,7 @@
+         mockMvc.perform(delete(REST_URL + ADMIN_MEAL_ID)
+                 .with(userHttpBasic(USER)))
+                 .andDo(print())
+-                .andExpect(status().isNotFound());
++                .andExpect(status().isUnprocessableEntity());
+     }
+ 
+     @Test
+\ No newline at end of file

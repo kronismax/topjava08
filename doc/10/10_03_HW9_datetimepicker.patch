@@ -1,0 +1,154 @@
+Index: src/main/webapp/resources/js/mealDatatables.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/resources/js/mealDatatables.js	(date 1478698290000)
++++ src/main/webapp/resources/js/mealDatatables.js	(revision )
+@@ -57,4 +57,36 @@
+         },
+         "initComplete": makeEditable
+     });
++
++    var startDate = $('#startDate');
++    var endDate = $('#endDate');
++    startDate.datetimepicker({
++        timepicker: false,
++        format: 'Y-m-d',
++        formatDate: 'Y-m-d',
++        onShow: function (ct) {
++            this.setOptions({
++                maxDate: endDate.val() ? endDate.val() : false
++            })
++        }
++    });
++    endDate.datetimepicker({
++        timepicker: false,
++        format: 'Y-m-d',
++        formatDate: 'Y-m-d',
++        onShow: function (ct) {
++            this.setOptions({
++                minDate: startDate.val() ? startDate.val() : false
++            })
++        }
++    });
++
++    $('#startTime, #endTime').datetimepicker({
++        datepicker: false,
++        format: 'H:i'
++    });
++
++    $('#dateTime').datetimepicker({
++        format: 'Y-m-d H:i'
++    });
+ });
+Index: src/main/java/ru/javawebinar/topjava/model/Meal.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/model/Meal.java	(date 1478698290000)
++++ src/main/java/ru/javawebinar/topjava/model/Meal.java	(revision )
+@@ -34,7 +34,7 @@
+ 
+     @Column(name = "date_time", nullable = false)
+     @NotNull
+-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
++    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
+     private LocalDateTime dateTime;
+ 
+     @Column(name = "description", nullable = false)
+Index: src/main/webapp/WEB-INF/jsp/meals.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/meals.jsp	(date 1478698290000)
++++ src/main/webapp/WEB-INF/jsp/meals.jsp	(revision )
+@@ -6,6 +6,7 @@
+ <html>
+ <jsp:include page="fragments/headTag.jsp"/>
+ <link rel="stylesheet" href="webjars/datatables/1.10.12/css/dataTables.bootstrap.min.css">
++<link rel="stylesheet" href="webjars/datetimepicker/2.4.7/jquery.datetimepicker.css">
+ 
+ <body>
+ <jsp:include page="fragments/bodyHeader.jsp"/>
+@@ -21,31 +22,32 @@
+                         <label class="control-label col-sm-2" for="startDate"><fmt:message key="meals.startDate"/>:</label>
+ 
+                         <div class="col-sm-2">
+-                            <input class="form-control" type="date" name="startDate" id="startDate">
++                            <input class="form-control" name="startDate" id="startDate">
+                         </div>
+ 
+                         <label class="control-label col-sm-2" for="endDate"><fmt:message key="meals.endDate"/>:</label>
+ 
+                         <div class="col-sm-2">
+-                            <input class="form-control" type="date" name="endDate" id="endDate">
++                            <input class="form-control" name="endDate" id="endDate">
+                         </div>
+                     </div>
+                     <div class="form-group">
+                         <label class="control-label col-sm-2" for="startTime"><fmt:message key="meals.startTime"/>:</label>
+ 
+-                        <div class="col-sm-2">
+-                            <input class="form-control" type="time" name="startTime" id="startTime">
++                        <div class="col-sm-1">
++                            <input class="form-control" name="startTime" id="startTime">
+                         </div>
+ 
+-                        <label class="control-label col-sm-2" for="endTime"><fmt:message key="meals.endTime"/>:</label>
++                        <label class="control-label col-sm-3" for="endTime"><fmt:message key="meals.endTime"/>:</label>
+ 
+-                        <div class="col-sm-2">
+-                            <input class="form-control" type="time" name="endTime" id="endTime">
++                        <div class="col-sm-1">
++                            <input class="form-control" name="endTime" id="endTime">
+                         </div>
+                     </div>
+                     <div class="form-group">
+-                        <div class="col-sm-8">
+-                            <button class="btn btn-primary pull-right"  type="button" onclick="updateTable()"><fmt:message key="meals.filter"/></button>
++                        <div class="col-sm-6"></div>
++                        <div class="col-sm-1">
++                            <button class="btn btn-primary"  type="button" onclick="updateTable()"><fmt:message key="meals.filter"/></button>
+                         </div>
+                     </div>
+                 </form>
+@@ -82,7 +84,7 @@
+                         <label for="dateTime" class="control-label col-xs-3"><fmt:message key="meals.dateTime"/></label>
+ 
+                         <div class="col-xs-9">
+-                            <input type="datetime-local" class="form-control" id="dateTime"
++                            <input class="form-control" id="dateTime"
+                                    name="dateTime" placeholder="<fmt:message key="meals.dateTime"/>">
+                         </div>
+                     </div>
+@@ -122,6 +124,7 @@
+ <script type="text/javascript" src="webjars/datatables/1.10.12/js/jquery.dataTables.min.js"></script>
+ <script type="text/javascript" src="webjars/datatables/1.10.12/js/dataTables.bootstrap.min.js"></script>
+ <script type="text/javascript" src="webjars/noty/2.3.8/js/noty/packaged/jquery.noty.packaged.min.js"></script>
++<script type="text/javascript" src="webjars/datetimepicker/2.4.7/build/jquery.datetimepicker.full.min.js"></script>
+ <script type="text/javascript" src="resources/js/datatablesUtil.js"></script>
+ <script type="text/javascript" src="resources/js/mealDatatables.js"></script>
+ </html>
+\ No newline at end of file
+Index: src/main/webapp/resources/js/datatablesUtil.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/resources/js/datatablesUtil.js	(date 1478698290000)
++++ src/main/webapp/resources/js/datatablesUtil.js	(revision )
+@@ -17,7 +17,9 @@
+     $('#modalTitle').html(edit_title);
+     $.get(ajaxUrl + id, function (data) {
+         $.each(data, function (key, value) {
+-            form.find("input[name='" + key + "']").val(value);
++            form.find("input[name='" + key + "']").val(
++                key === "dateTime" ? value.replace('T', ' ').substr(0, 16) : value
++            );
+         });
+         $('#editRow').modal();
+     });
+\ No newline at end of file

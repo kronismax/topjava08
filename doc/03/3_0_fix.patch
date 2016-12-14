@@ -1,0 +1,75 @@
+Index: src/main/java/ru/javawebinar/topjava/service/UserServiceImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/service/UserServiceImpl.java	(revision fdcf587a8ace752ca2382a516d92d13945726eb0)
++++ src/main/java/ru/javawebinar/topjava/service/UserServiceImpl.java	(revision )
+@@ -19,26 +19,32 @@
+     @Autowired
+     private UserRepository repository;
+ 
++    @Override
+     public User save(User user) {
+         return repository.save(user);
+     }
+ 
++    @Override
+     public void delete(int id) {
+         ExceptionUtil.checkNotFoundWithId(repository.delete(id), id);
+     }
+ 
++    @Override
+     public User get(int id) throws NotFoundException {
+         return ExceptionUtil.checkNotFoundWithId(repository.get(id), id);
+     }
+ 
++    @Override
+     public User getByEmail(String email) throws NotFoundException {
+         return ExceptionUtil.checkNotFound(repository.getByEmail(email), "email=" + email);
+     }
+ 
++    @Override
+     public List<User> getAll() {
+         return repository.getAll();
+     }
+ 
++    @Override
+     public void update(User user) {
+         repository.save(user);
+     }
+Index: config/setenv.sh
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- config/setenv.sh	(revision )
++++ config/setenv.sh	(revision )
+@@ -0,0 +1,3 @@
++# run tomcat with JMX ability as admin
++# for remote connection add -Djava.rmi.server.hostname=TomcatServer_IP
++export CATALINA_OPTS="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=1099 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+\ No newline at end of file
+Index: src/main/java/ru/javawebinar/topjava/util/TimeUtil.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/util/TimeUtil.java	(revision fdcf587a8ace752ca2382a516d92d13945726eb0)
++++ src/main/java/ru/javawebinar/topjava/util/TimeUtil.java	(revision )
+@@ -9,13 +9,13 @@
+  * 07.01.2015.
+  */
+ public class TimeUtil {
+-    public static final DateTimeFormatter DATE_TME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
++    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+ 
+     public static boolean isBetween(LocalTime lt, LocalTime startTime, LocalTime endTime) {
+         return lt.compareTo(startTime) >= 0 && lt.compareTo(endTime) <= 0;
+     }
+ 
+     public static String toString(LocalDateTime ldt) {
+-        return ldt == null ? "" : ldt.format(DATE_TME_FORMATTER);
++        return ldt == null ? "" : ldt.format(DATE_TIME_FORMATTER);
+     }
+ }

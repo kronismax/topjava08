@@ -1,0 +1,310 @@
+Index: src/main/java/ru/javawebinar/topjava/web/json/JsonUtil.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/web/json/JsonUtil.java	(revision )
++++ src/main/java/ru/javawebinar/topjava/web/json/JsonUtil.java	(revision )
+@@ -0,0 +1,41 @@
++package ru.javawebinar.topjava.web.json;
++
++import com.fasterxml.jackson.core.JsonProcessingException;
++import com.fasterxml.jackson.databind.ObjectReader;
++
++import java.io.IOException;
++import java.util.List;
++
++import static ru.javawebinar.topjava.web.json.JacksonObjectMapper.getMapper;
++
++/**
++ * User: gkislin
++ * Date: 30.04.2014
++ */
++public class JsonUtil {
++
++    public static <T> List<T> readValues(String json, Class<T> clazz) {
++        ObjectReader reader = getMapper().readerFor(clazz);
++        try {
++            return reader.<T>readValues(json).readAll();
++        } catch (IOException e) {
++            throw new IllegalArgumentException("Invalid read array from JSON:\n'" + json + "'", e);
++        }
++    }
++
++    public static <T> T readValue(String json, Class<T> clazz) {
++        try {
++            return getMapper().readValue(json, clazz);
++        } catch (IOException e) {
++            throw new IllegalArgumentException("Invalid read from JSON:\n'" + json + "'", e);
++        }
++    }
++
++    public static <T> String writeValue(T obj) {
++        try {
++            return getMapper().writeValueAsString(obj);
++        } catch (JsonProcessingException e) {
++            throw new IllegalStateException("Invalid write to JSON:\n'" + obj + "'", e);
++        }
++    }
++}
+Index: src/main/java/ru/javawebinar/topjava/web/json/JsonLocalDateTimeConverter.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/web/json/JsonLocalDateTimeConverter.java	(revision )
++++ src/main/java/ru/javawebinar/topjava/web/json/JsonLocalDateTimeConverter.java	(revision )
+@@ -0,0 +1,42 @@
++package ru.javawebinar.topjava.web.json;
++
++import com.fasterxml.jackson.core.JsonGenerator;
++import com.fasterxml.jackson.core.JsonParser;
++import com.fasterxml.jackson.databind.DeserializationContext;
++import com.fasterxml.jackson.databind.JsonDeserializer;
++import com.fasterxml.jackson.databind.JsonSerializer;
++import com.fasterxml.jackson.databind.SerializerProvider;
++import ru.javawebinar.topjava.util.TimeUtil;
++
++import java.io.IOException;
++import java.time.LocalDateTime;
++
++/**
++ * GKislin
++ * 06.01.2015.
++ */
++public class JsonLocalDateTimeConverter {
++    public static class UserSettingSerializer extends JsonSerializer<LocalDateTime> {
++        @Override
++        public void serialize(LocalDateTime ldt, JsonGenerator jgen, SerializerProvider provider) throws IOException {
++            jgen.writeString(TimeUtil.toString(ldt));
++        }
++
++        @Override
++        public Class<LocalDateTime> handledType() {
++            return LocalDateTime.class;
++        }
++    }
++
++    public static class UserSettingDeserializer extends JsonDeserializer<LocalDateTime> {
++        @Override
++        public LocalDateTime deserialize(JsonParser jp, DeserializationContext ctx) throws IOException {
++            return TimeUtil.parseLocalDateTime(jp.getText());
++        }
++
++        @Override
++        public Class<LocalDateTime> handledType() {
++            return LocalDateTime.class;
++        }
++    }
++}
+Index: src/test/java/ru/javawebinar/topjava/web/json/JsonUtilTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/web/json/JsonUtilTest.java	(revision )
++++ src/test/java/ru/javawebinar/topjava/web/json/JsonUtilTest.java	(revision )
+@@ -0,0 +1,30 @@
++package ru.javawebinar.topjava.web.json;
++
++import org.junit.Test;
++import ru.javawebinar.topjava.MealTestData;
++import ru.javawebinar.topjava.model.Meal;
++
++import java.util.List;
++
++/**
++ * GKislin
++ * 22.07.2015.
++ */
++public class JsonUtilTest {
++
++    @Test
++    public void testReadWriteValue() throws Exception {
++        String json = JsonUtil.writeValue(MealTestData.ADMIN_MEAL1);
++        System.out.println(json);
++        Meal userMeal = JsonUtil.readValue(json, Meal.class);
++        MealTestData.MATCHER.assertEquals(MealTestData.ADMIN_MEAL1, userMeal);
++    }
++
++    @Test
++    public void testReadWriteValues() throws Exception {
++        String json = JsonUtil.writeValue(MealTestData.MEALS);
++        System.out.println(json);
++        List<Meal> userMeals = JsonUtil.readValues(json, Meal.class);
++        MealTestData.MATCHER.assertCollectionEquals(MealTestData.MEALS, userMeals);
++    }
++}
+\ No newline at end of file
+Index: src/main/java/ru/javawebinar/topjava/web/json/JacksonObjectMapper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/web/json/JacksonObjectMapper.java	(revision )
++++ src/main/java/ru/javawebinar/topjava/web/json/JacksonObjectMapper.java	(revision )
+@@ -0,0 +1,42 @@
++package ru.javawebinar.topjava.web.json;
++
++import com.fasterxml.jackson.annotation.JsonAutoDetect;
++import com.fasterxml.jackson.annotation.JsonInclude;
++import com.fasterxml.jackson.annotation.PropertyAccessor;
++import com.fasterxml.jackson.databind.ObjectMapper;
++import com.fasterxml.jackson.databind.module.SimpleModule;
++import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
++
++import java.time.LocalDateTime;
++
++/**
++ * User: gkislin
++ * Date: 26.05.2014
++ * <p>
++ * Handling Hibernate lazy-loading
++ *
++ * @link https://github.com/FasterXML/jackson
++ * @link https://github.com/FasterXML/jackson-datatype-hibernate
++ * @link http://wiki.fasterxml.com/JacksonHowToCustomSerializers
++ */
++public class JacksonObjectMapper extends ObjectMapper {
++
++    private static final ObjectMapper MAPPER = new JacksonObjectMapper();
++
++    public static ObjectMapper getMapper() {
++        return MAPPER;
++    }
++
++    private JacksonObjectMapper() {
++        registerModule(new Hibernate5Module());
++
++        SimpleModule customModule = new SimpleModule("customModule");
++        customModule.addSerializer(new JsonLocalDateTimeConverter.UserSettingSerializer());
++        customModule.addDeserializer(LocalDateTime.class, new JsonLocalDateTimeConverter.UserSettingDeserializer());
++        registerModule(customModule);
++
++        setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
++        setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
++        setSerializationInclusion(JsonInclude.Include.NON_NULL);
++    }
++}
+\ No newline at end of file
+Index: pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- pom.xml	(date 1476913789000)
++++ pom.xml	(revision )
+@@ -235,6 +235,11 @@
+             <artifactId>jackson-databind</artifactId>
+             <version>${jackson-json.version}</version>
+         </dependency>
++        <dependency>
++            <groupId>com.fasterxml.jackson.datatype</groupId>
++            <artifactId>jackson-datatype-hibernate5</artifactId>
++            <version>${jackson-json.version}</version>
++        </dependency>
+ 
+         <!--Test-->
+         <dependency>
+Index: src/main/resources/spring/spring-mvc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/resources/spring/spring-mvc.xml	(date 1476913789000)
++++ src/main/resources/spring/spring-mvc.xml	(revision )
+@@ -5,7 +5,15 @@
+        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+ 
+-    <mvc:annotation-driven/>
++    <bean class="ru.javawebinar.topjava.web.json.JacksonObjectMapper" id="objectMapper" factory-method="getMapper"/>
++
++    <mvc:annotation-driven>
++        <mvc:message-converters>
++            <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
++                <property name="objectMapper" ref="objectMapper"/>
++            </bean>
++        </mvc:message-converters>
++    </mvc:annotation-driven>
+ 
+     <context:component-scan base-package="ru.javawebinar.**.web"/>
+ 
+\ No newline at end of file
+Index: src/main/java/ru/javawebinar/topjava/model/User.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/model/User.java	(date 1476913789000)
++++ src/main/java/ru/javawebinar/topjava/model/User.java	(revision )
+@@ -7,7 +7,6 @@
+ import org.hibernate.validator.constraints.Length;
+ import org.hibernate.validator.constraints.NotEmpty;
+ import ru.javawebinar.topjava.util.MealsUtil;
+-import com.fasterxml.jackson.annotation.JsonIgnore;
+ 
+ import javax.persistence.*;
+ import javax.validation.constraints.Digits;
+@@ -64,7 +63,7 @@
+ 
+     @OneToMany(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY, mappedBy = "user")
+     @OrderBy("dateTime DESC")
+-    @JsonIgnore
++//    @JsonIgnore
+     protected List<Meal> meals;
+ 
+     public User() {
+Index: src/main/java/ru/javawebinar/topjava/model/BaseEntity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/model/BaseEntity.java	(date 1476913789000)
++++ src/main/java/ru/javawebinar/topjava/model/BaseEntity.java	(revision )
+@@ -1,14 +1,10 @@
+ package ru.javawebinar.topjava.model;
+ 
+-import com.fasterxml.jackson.annotation.JsonAutoDetect;
+ import org.hibernate.Hibernate;
+ import org.springframework.data.domain.Persistable;
+ 
+ import javax.persistence.*;
+ 
+-import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
+-import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
+-
+ /**
+  * User: gkislin
+  * Date: 22.08.2014
+@@ -21,7 +17,7 @@
+ @MappedSuperclass
+ // http://stackoverflow.com/questions/594597/hibernate-annotations-which-is-better-field-or-property-access
+ @Access(AccessType.FIELD)
+-@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, isGetterVisibility = NONE, setterVisibility = NONE)
++//@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, isGetterVisibility = NONE, setterVisibility = NONE)
+ public class BaseEntity implements Persistable<Integer> {
+     public static final int START_SEQ = 100000;
+ 
+Index: src/main/java/ru/javawebinar/topjava/util/TimeUtil.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/util/TimeUtil.java	(date 1476913789000)
++++ src/main/java/ru/javawebinar/topjava/util/TimeUtil.java	(revision )
+@@ -35,4 +35,12 @@
+     public static LocalTime parseLocalTime(String str) {
+         return StringUtils.isEmpty(str) ? null : LocalTime.parse(str);
+     }
++
++    public static LocalDateTime parseLocalDateTime(String str) {
++        return parseLocalDateTime(str, DATE_TIME_FORMATTER);
++    }
++
++    public static LocalDateTime parseLocalDateTime(String str, DateTimeFormatter formatter) {
++        return StringUtils.isEmpty(str) ? LocalDateTime.now() : LocalDateTime.parse(str, formatter);
++    }
+-}
++}
+\ No newline at end of file

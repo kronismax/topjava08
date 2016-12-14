@@ -1,0 +1,306 @@
+Index: .travis.yml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .travis.yml	(revision )
++++ .travis.yml	(revision )
+@@ -0,0 +1,2 @@
++language: java
++jdk: oraclejdk8
+\ No newline at end of file
+Index: src/main/java/ru/javawebinar/topjava/util/exception/ExceptionUtil.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/util/exception/ExceptionUtil.java	(date 1474921410000)
++++ src/main/java/ru/javawebinar/topjava/util/exception/ExceptionUtil.java	(revision )
+@@ -6,6 +6,9 @@
+  * Date: 14.05.2014
+  */
+ public class ExceptionUtil {
++    private ExceptionUtil() {
++    }
++
+     public static void checkNotFoundWithId(boolean found, int id) {
+         checkNotFound(found, "id=" + id);
+     }
+@@ -20,6 +23,8 @@
+     }
+ 
+     public static void checkNotFound(boolean found, String msg) {
+-        if (!found) throw new NotFoundException("Not found entity with " + msg);
++        if (!found) {
++            throw new NotFoundException("Not found entity with " + msg);
++        }
+     }
+ }
+Index: src/test/java/ru/javawebinar/topjava/matcher/ModelMatcher.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/matcher/ModelMatcher.java	(date 1474921410000)
++++ src/test/java/ru/javawebinar/topjava/matcher/ModelMatcher.java	(revision )
+@@ -16,14 +16,14 @@
+  * @param <T> : Entity
+  */
+ public class ModelMatcher<T> {
+-    public interface Comparator<T> {
+-        boolean compare(T expected, T actual);
+-    }
+-
+     private static final Comparator DEFAULT_COMPARATOR =
+             (Object expected, Object actual) -> expected == actual || String.valueOf(expected).equals(String.valueOf(actual));
+ 
+     private Comparator<T> comparator;
++
++    public interface Comparator<T> {
++        boolean compare(T expected, T actual);
++    }
+ 
+     public ModelMatcher() {
+         this((Comparator<T>) DEFAULT_COMPARATOR);
+Index: src/main/java/ru/javawebinar/topjava/service/UserServiceImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/service/UserServiceImpl.java	(date 1474921410000)
++++ src/main/java/ru/javawebinar/topjava/service/UserServiceImpl.java	(revision )
+@@ -2,6 +2,7 @@
+ 
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.stereotype.Service;
++import org.springframework.util.Assert;
+ import ru.javawebinar.topjava.model.User;
+ import ru.javawebinar.topjava.repository.UserRepository;
+ import ru.javawebinar.topjava.util.exception.ExceptionUtil;
+@@ -21,6 +22,7 @@
+ 
+     @Override
+     public User save(User user) {
++        Assert.notNull(user, "user must not be null");
+         return repository.save(user);
+     }
+ 
+@@ -36,6 +38,7 @@
+ 
+     @Override
+     public User getByEmail(String email) throws NotFoundException {
++        Assert.notNull(email, "email must not be null");
+         return ExceptionUtil.checkNotFound(repository.getByEmail(email), "email=" + email);
+     }
+ 
+@@ -46,6 +49,7 @@
+ 
+     @Override
+     public void update(User user) {
++        Assert.notNull(user, "user must not be null");
+         repository.save(user);
+     }
+ }
+Index: src/main/java/ru/javawebinar/topjava/service/MealServiceImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/service/MealServiceImpl.java	(date 1474921410000)
++++ src/main/java/ru/javawebinar/topjava/service/MealServiceImpl.java	(revision )
+@@ -2,6 +2,7 @@
+ 
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.stereotype.Service;
++import org.springframework.util.Assert;
+ import ru.javawebinar.topjava.model.Meal;
+ import ru.javawebinar.topjava.repository.MealRepository;
+ import ru.javawebinar.topjava.util.exception.ExceptionUtil;
+@@ -31,6 +32,8 @@
+ 
+     @Override
+     public Collection<Meal> getBetweenDateTimes(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId) {
++        Assert.notNull(startDateTime, "startDateTime must not be null");
++        Assert.notNull(endDateTime, "endDateTime  must not be null");
+         return repository.getBetween(startDateTime, endDateTime, userId);
+     }
+ 
+@@ -41,11 +44,13 @@
+ 
+     @Override
+     public Meal update(Meal meal, int userId) {
++        Assert.notNull(meal, "meal must not be null");
+         return ExceptionUtil.checkNotFoundWithId(repository.save(meal, userId), meal.getId());
+     }
+ 
+     @Override
+     public Meal save(Meal meal, int userId) {
++        Assert.notNull(meal, "meal must not be null");
+         return repository.save(meal, userId);
+     }
+ }
+Index: src/test/java/ru/javawebinar/topjava/repository/mock/InMemoryMealRepositoryImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/repository/mock/InMemoryMealRepositoryImpl.java	(date 1474921410000)
++++ src/test/java/ru/javawebinar/topjava/repository/mock/InMemoryMealRepositoryImpl.java	(revision )
+@@ -10,7 +10,6 @@
+ import java.util.Collection;
+ import java.util.Comparator;
+ import java.util.Map;
+-import java.util.Objects;
+ import java.util.concurrent.ConcurrentHashMap;
+ import java.util.concurrent.atomic.AtomicInteger;
+ import java.util.stream.Collectors;
+@@ -41,8 +40,6 @@
+ 
+     @Override
+     public Meal save(Meal meal, int userId) {
+-        Objects.requireNonNull(meal);
+-
+         Integer mealId = meal.getId();
+         if (meal.isNew()) {
+             mealId = counter.incrementAndGet();
+@@ -74,8 +71,6 @@
+ 
+     @Override
+     public Collection<Meal> getBetween(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId) {
+-        Objects.requireNonNull(startDateTime);
+-        Objects.requireNonNull(endDateTime);
+         return getAllStream(userId)
+                 .filter(um -> TimeUtil.isBetween(um.getDateTime(), startDateTime, endDateTime))
+                 .collect(Collectors.toList());
+Index: src/main/java/ru/javawebinar/topjava/web/user/AbstractUserController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/web/user/AbstractUserController.java	(date 1474921410000)
++++ src/main/java/ru/javawebinar/topjava/web/user/AbstractUserController.java	(revision )
+@@ -12,40 +12,40 @@
+  * User: gkislin
+  */
+ public abstract class AbstractUserController {
+-    protected final Logger LOG = LoggerFactory.getLogger(getClass());
++    protected final Logger log = LoggerFactory.getLogger(getClass());
+ 
+     @Autowired
+     private UserService service;
+ 
+     public List<User> getAll() {
+-        LOG.info("getAll");
++        log.info("getAll");
+         return service.getAll();
+     }
+ 
+     public User get(int id) {
+-        LOG.info("get " + id);
++        log.info("get " + id);
+         return service.get(id);
+     }
+ 
+     public User create(User user) {
+         user.setId(null);
+-        LOG.info("create " + user);
++        log.info("create " + user);
+         return service.save(user);
+     }
+ 
+     public void delete(int id) {
+-        LOG.info("delete " + id);
++        log.info("delete " + id);
+         service.delete(id);
+     }
+ 
+     public void update(User user, int id) {
+         user.setId(id);
+-        LOG.info("update " + user);
++        log.info("update " + user);
+         service.update(user);
+     }
+ 
+     public User getByMail(String email) {
+-        LOG.info("getByEmail " + email);
++        log.info("getByEmail " + email);
+         return service.getByEmail(email);
+     }
+ }
+Index: src/test/java/ru/javawebinar/topjava/repository/mock/InMemoryUserRepositoryImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javawebinar/topjava/repository/mock/InMemoryUserRepositoryImpl.java	(date 1474921410000)
++++ src/test/java/ru/javawebinar/topjava/repository/mock/InMemoryUserRepositoryImpl.java	(revision )
+@@ -11,7 +11,6 @@
+ import java.util.Comparator;
+ import java.util.List;
+ import java.util.Map;
+-import java.util.Objects;
+ import java.util.concurrent.ConcurrentHashMap;
+ import java.util.concurrent.atomic.AtomicInteger;
+ import java.util.stream.Collectors;
+@@ -31,7 +30,6 @@
+ 
+     @Override
+     public User save(User user) {
+-        Objects.requireNonNull(user);
+         if (user.isNew()) {
+             user.setId(counter.incrementAndGet());
+         }
+@@ -68,7 +66,6 @@
+ 
+     @Override
+     public User getByEmail(String email) {
+-        Objects.requireNonNull(email);
+         return repository.values().stream()
+                 .filter(u -> email.equals(u.getEmail()))
+                 .findFirst()
+Index: config/setenv.sh
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- config/setenv.sh	(date 1474921410000)
++++ config/setenv.sh	(revision )
+@@ -1,3 +1,4 @@
++#!/usr/bin/env bash
+ # run tomcat with JMX ability as admin
+ # for remote connection add -Djava.rmi.server.hostname=TomcatServer_IP
+ export CATALINA_OPTS="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=1099 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+\ No newline at end of file
+Index: src/main/java/ru/javawebinar/topjava/util/TimeUtil.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/util/TimeUtil.java	(date 1474921410000)
++++ src/main/java/ru/javawebinar/topjava/util/TimeUtil.java	(revision )
+@@ -17,6 +17,9 @@
+     public static final LocalDate MIN_DATE = LocalDate.of(1, 1, 1);
+     public static final LocalDate MAX_DATE = LocalDate.of(3000, 1, 1);
+ 
++    private TimeUtil() {
++    }
++
+     public static <T extends Comparable<? super T>> boolean isBetween(T value, T start, T end) {
+         return value.compareTo(start) >= 0 && value.compareTo(end) <= 0;
+     }
+Index: src/main/java/ru/javawebinar/topjava/web/MealServlet.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/web/MealServlet.java	(date 1474921410000)
++++ src/main/java/ru/javawebinar/topjava/web/MealServlet.java	(revision )
+@@ -92,7 +92,7 @@
+             response.sendRedirect("meals");
+ 
+         } else if ("create".equals(action) || "update".equals(action)) {
+-            final Meal meal = action.equals("create") ?
++            final Meal meal = "create".equals(action) ?
+                     new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS), "", 1000) :
+                     mealController.get(getId(request));
+             request.setAttribute("meal", meal);

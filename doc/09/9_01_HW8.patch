@@ -1,0 +1,573 @@
+Index: src/main/java/ru/javawebinar/topjava/web/meal/MealAjaxController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/web/meal/MealAjaxController.java	(revision )
++++ src/main/java/ru/javawebinar/topjava/web/meal/MealAjaxController.java	(revision )
+@@ -0,0 +1,53 @@
++package ru.javawebinar.topjava.web.meal;
++
++import org.springframework.format.annotation.DateTimeFormat;
++import org.springframework.http.MediaType;
++import org.springframework.web.bind.annotation.*;
++import ru.javawebinar.topjava.model.Meal;
++import ru.javawebinar.topjava.to.MealWithExceed;
++
++import java.time.LocalDate;
++import java.time.LocalDateTime;
++import java.time.LocalTime;
++import java.util.List;
++
++/**
++ * gkislin
++ * 16.10.2016
++ */
++@RestController
++@RequestMapping(value = "/ajax/profile/meals")
++public class MealAjaxController extends AbstractMealController {
++
++    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
++    public List<MealWithExceed> getAll() {
++        return super.getAll();
++    }
++
++    @DeleteMapping(value = "/{id}")
++    public void delete(@PathVariable("id") int id) {
++        super.delete(id);
++    }
++
++    @PostMapping
++    public void updateOrCreate(@RequestParam("id") Integer id,
++                               @RequestParam("dateTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateTime,
++                               @RequestParam("description") String description,
++                               @RequestParam("calories") int calories) {
++        Meal meal = new Meal(id, dateTime, description, calories);
++        if (meal.isNew()) {
++            super.create(meal);
++        } else {
++            super.update(meal, id);
++        }
++    }
++
++    @PostMapping(value = "/filter", produces = MediaType.APPLICATION_JSON_VALUE)
++    public List<MealWithExceed> getBetween(
++            @RequestParam(value = "startDate", required = false) LocalDate startDate,
++            @RequestParam(value = "startTime", required = false) LocalTime startTime,
++            @RequestParam(value = "endDate", required = false) LocalDate endDate,
++            @RequestParam(value = "endTime", required = false) LocalTime endTime) {
++        return super.getBetween(startDate, startTime, endDate, endTime);
++    }
++}
+Index: src/main/webapp/WEB-INF/jsp/meal.jsp
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/meal.jsp	(date 1478091001000)
++++ src/main/webapp/WEB-INF/jsp/meal.jsp	(date 1478091001000)
+@@ -1,32 +0,0 @@
+-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+-<html>
+-<jsp:include page="fragments/headTag.jsp"/>
+-<body>
+-<jsp:include page="fragments/bodyHeader.jsp"/>
+-<section>
+-    <h3><fmt:message key="${meal.isNew() ? 'meals.add' : 'meals.edit'}"/></h3>
+-    <hr>
+-    <jsp:useBean id="meal" type="ru.javawebinar.topjava.model.Meal" scope="request"/>
+-    <form method="post" action="meals">
+-        <input type="hidden" name="id" value="${meal.id}">
+-        <dl>
+-            <dt><fmt:message key="meals.dateTime"/>:</dt>
+-            <dd><input type="datetime-local" value="${meal.dateTime}" name="dateTime"></dd>
+-        </dl>
+-        <dl>
+-            <dt><fmt:message key="meals.description"/>:</dt>
+-            <dd><input type="text" value="${meal.description}" size=40 name="description"></dd>
+-        </dl>
+-        <dl>
+-            <dt><fmt:message key="meals.calories"/>:</dt>
+-            <dd><input type="number" value="${meal.calories}" name="calories"></dd>
+-        </dl>
+-        <button type="submit"><fmt:message key="common.save"/></button>
+-        <button onclick="window.history.back()"><fmt:message key="common.cancel"/></button>
+-    </form>
+-</section>
+-<jsp:include page="fragments/footer.jsp"/>
+-</body>
+-</html>
+Index: src/main/webapp/resources/css/style.css
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/resources/css/style.css	(date 1478091001000)
++++ src/main/webapp/resources/css/style.css	(revision )
+@@ -1,20 +1,3 @@
+-dl {
+-    background: none repeat scroll 0 0 #FAFAFA;
+-    margin: 8px 0;
+-    padding: 0;
+-}
+-
+-dt {
+-    display: inline-block;
+-    width: 170px;
+-}
+-
+-dd {
+-    display: inline-block;
+-    margin-left: 8px;
+-    vertical-align: top;
+-}
+-
+ .normal {
+     color: green;
+ }
+@@ -23,10 +6,6 @@
+     color: red;
+ }
+ 
+-header, footer {
+-    background: none repeat scroll 0 0 #A6C9E2;
+-    color: #2E6E9E;
+-    font-size: 20px;
+-    padding: 5px 20px;
+-    margin: 6px 0;
++.footer {
++    padding-bottom: 15px;
+ }
+Index: src/main/webapp/WEB-INF/jsp/meals.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/meals.jsp	(date 1478091001000)
++++ src/main/webapp/WEB-INF/jsp/meals.jsp	(revision )
+@@ -1,62 +1,183 @@
++<%@ page import="ru.javawebinar.topjava.util.TimeUtil" %>
+ <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+ <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+ <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+ <%@ taglib prefix="fn" uri="http://topjava.javawebinar.ru/functions" %>
+ <html>
+ <jsp:include page="fragments/headTag.jsp"/>
++<link rel="stylesheet" href="webjars/datatables/1.10.12/css/dataTables.bootstrap.min.css">
++
+ <body>
+ <jsp:include page="fragments/bodyHeader.jsp"/>
+-<section>
++
++<div class="jumbotron">
++    <div class="container">
++        <div class="shadow">
+-    <h3><fmt:message key="meals.title"/></h3>
++            <h3><fmt:message key="meals.title"/></h3>
+ 
+-    <form method="post" action="meals/filter">
+-        <dl>
+-            <dt><fmt:message key="meals.startDate"/>:</dt>
+-            <dd><input type="date" name="startDate" value="${param.startDate}"></dd>
+-        </dl>
+-        <dl>
+-            <dt><fmt:message key="meals.endDate"/>:</dt>
+-            <dd><input type="date" name="endDate" value="${param.endDate}"></dd>
+-        </dl>
+-        <dl>
+-            <dt><fmt:message key="meals.startTime"/>:</dt>
+-            <dd><input type="time" name="startTime" value="${param.startTime}"></dd>
+-        </dl>
+-        <dl>
+-            <dt><fmt:message key="meals.endTime"/>:</dt>
+-            <dd><input type="time" name="endTime" value="${param.endTime}"></dd>
+-        </dl>
+-        <button type="submit"><fmt:message key="meals.filter"/></button>
++            <div class="view-box">
++                <form method="post" class="form-horizontal" role="form" id="filter">
++                    <div class="form-group">
++                        <label class="control-label col-sm-2" for="startDate"><fmt:message key="meals.startDate"/>:</label>
++
++                        <div class="col-sm-2">
++                            <input class="form-control" type="date" name="startDate" id="startDate">
++                        </div>
++
++                        <label class="control-label col-sm-2" for="endDate"><fmt:message key="meals.endDate"/>:</label>
++
++                        <div class="col-sm-2">
++                            <input class="form-control" type="date" name="endDate" id="endDate">
++                        </div>
++                    </div>
++                    <div class="form-group">
++                        <label class="control-label col-sm-2" for="startTime"><fmt:message key="meals.startTime"/>:</label>
++
++                        <div class="col-sm-2">
++                            <input class="form-control" type="time" name="startTime" id="startTime">
++                        </div>
++
++                        <label class="control-label col-sm-2" for="endTime"><fmt:message key="meals.endTime"/>:</label>
++
++                        <div class="col-sm-2">
++                            <input class="form-control" type="time" name="endTime" id="endTime">
++                        </div>
++                    </div>
++                    <div class="form-group">
++                        <div class="col-sm-8">
++                            <button class="btn btn-primary pull-right"  type="button" onclick="updateTable()"><fmt:message key="meals.filter"/></button>
++                        </div>
++                    </div>
+-    </form>
++                </form>
+-    <hr>
+-    <a href="meals/create"><fmt:message key="meals.add"/></a>
+-    <hr>
+-    <table border="1" cellpadding="8" cellspacing="0">
++                <a class="btn btn-sm btn-info" onclick="add()"><fmt:message key="meals.add"/></a>
++                <table class="table table-striped display" id="datatable">
+-        <thead>
+-        <tr>
+-            <th><fmt:message key="meals.dateTime"/></th>
+-            <th><fmt:message key="meals.description"/></th>
+-            <th><fmt:message key="meals.calories"/></th>
+-            <th></th>
+-            <th></th>
+-        </tr>
+-        </thead>
+-        <c:forEach items="${meals}" var="meal">
+-            <jsp:useBean id="meal" scope="page" type="ru.javawebinar.topjava.to.MealWithExceed"/>
+-            <tr class="${meal.exceed ? 'exceeded' : 'normal'}">
+-                <td>
++                    <thead>
++                    <tr>
++                        <th><fmt:message key="meals.dateTime"/></th>
++                        <th><fmt:message key="meals.description"/></th>
++                        <th><fmt:message key="meals.calories"/></th>
++                        <th></th>
++                        <th></th>
++                    </tr>
++                    </thead>
++                    <c:forEach items="${meals}" var="meal">
++                        <jsp:useBean id="meal" scope="page" type="ru.javawebinar.topjava.to.MealWithExceed"/>
++                        <tr class="${meal.exceed ? 'exceeded' : 'normal'}">
++                            <td>
+-                        <%--${meal.dateTime.toLocalDate()} ${meal.dateTime.toLocalTime()}--%>
+-                        <%--<%=TimeUtil.toString(meal.getDateTime())%>--%>
++                                    <%--<fmt:parseDate value="${meal.dateTime}" pattern="y-M-dd'T'H:m" var="parsedDate"/>--%>
++                                    <%--<fmt:formatDate value="${parsedDate}" pattern="yyyy.MM.dd HH:mm" />--%>
+-                        ${fn:formatDateTime(meal.dateTime)}
+-                </td>
+-                <td>${meal.description}</td>
+-                <td>${meal.calories}</td>
++                                    ${fn:formatDateTime(meal.dateTime)}
++                            </td>
++                            <td>${meal.description}</td>
++                            <td>${meal.calories}</td>
+-                <td><a href="meals/update?id=${meal.id}"><fmt:message key="common.update"/></a></td>
+-                <td><a href="meals/delete?id=${meal.id}"><fmt:message key="common.delete"/></a></td>
++                            <td><a class="btn btn-xs btn-primary"><fmt:message key="common.update"/></a></td>
++                            <td><a class="btn btn-xs btn-danger" onclick="deleteRow(${meal.id})"><fmt:message key="common.delete"/></a></td>
+-            </tr>
+-        </c:forEach>
+-    </table>
++                        </tr>
++                    </c:forEach>
++                </table>
+-</section>
++            </div>
++        </div>
++    </div>
++</div>
+ <jsp:include page="fragments/footer.jsp"/>
++
++<div class="modal fade" id="editRow">
++    <div class="modal-dialog">
++        <div class="modal-content">
++            <div class="modal-header">
++                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
++                <h2 class="modal-title"><fmt:message key="meals.add"/></h2>
++            </div>
++            <div class="modal-body">
++                <form class="form-horizontal" method="post" id="detailsForm">
++                    <input type="hidden" id="id" name="id">
++
++                    <div class="form-group">
++                        <label for="dateTime" class="control-label col-xs-3"><fmt:message key="meals.dateTime"/></label>
++
++                        <div class="col-xs-9">
++                            <input type="datetime-local" class="form-control" id="dateTime"
++                                   name="dateTime" placeholder="<fmt:message key="meals.dateTime"/>">
++                        </div>
++                    </div>
++                    <div class="form-group">
++                        <label for="description" class="control-label col-xs-3"><fmt:message
++                                key="meals.description"/></label>
++
++                        <div class="col-xs-9">
++                            <input type="text" class="form-control" id="description" name="description"
++                                   placeholder="<fmt:message key="meals.description"/>">
++                        </div>
++                    </div>
++                    <div class="form-group">
++                        <label for="calories" class="control-label col-xs-3"><fmt:message key="meals.calories"/></label>
++
++                        <div class="col-xs-9">
++                            <input type="number" class="form-control" id="calories" name="calories"
++                                   placeholder="1000">
++                        </div>
++                    </div>
++                    <div class="form-group">
++                        <div class="col-xs-offset-3 col-xs-9">
++                            <button class="btn btn-primary" type="button" onclick="save()"><fmt:message key="common.save"/></button>
++                        </div>
++                    </div>
++                </form>
++            </div>
++        </div>
++    </div>
++</div>
+ </body>
++<script type="text/javascript" src="webjars/jquery/2.2.4/jquery.min.js"></script>
++<script type="text/javascript" src="webjars/bootstrap/3.3.7-1/js/bootstrap.min.js"></script>
++<script type="text/javascript" src="webjars/datatables/1.10.12/js/jquery.dataTables.min.js"></script>
++<script type="text/javascript" src="webjars/datatables/1.10.12/js/dataTables.bootstrap.min.js"></script>
++<script type="text/javascript" src="webjars/noty/2.3.8/js/noty/packaged/jquery.noty.packaged.min.js"></script>
++<script type="text/javascript" src="resources/js/datatablesUtil.js"></script>
++<script type="text/javascript">
++    var ajaxUrl = 'ajax/profile/meals/';
++    var datatableApi;
++
++    function updateTable() {
++        $.ajax({
++            type: "POST",
++            url: ajaxUrl + 'filter',
++            data: $('#filter').serialize(),
++            success: updateTableByData
++        });
++    }
++
++    $(function () {
++        datatableApi = $('#datatable').dataTable({
++            "bPaginate": false,
++            "bInfo": true,
++            "aoColumns": [
++                {
++                    "mData": "dateTime"
++                },
++                {
++                    "mData": "description"
++                },
++                {
++                    "mData": "calories"
++                },
++                {
++                    "sDefaultContent": "<fmt:message key="common.update"/>",
++                    "bSortable": false
++                },
++                {
++                    "sDefaultContent": "<fmt:message key="common.delete"/>",
++                    "bSortable": false
++                }
++            ],
++            "aaSorting": [
++                [
++                    0,
++                    "desc"
++                ]
++            ]
++        });
++        makeEditable();
++    });
++</script>
+-</html>
++</html>
+\ No newline at end of file
+Index: src/main/java/ru/javawebinar/topjava/web/meal/JspMealController.java
+===================================================================
+--- src/main/java/ru/javawebinar/topjava/web/meal/JspMealController.java	(date 1478091001000)
++++ src/main/java/ru/javawebinar/topjava/web/meal/JspMealController.java	(date 1478091001000)
+@@ -1,74 +0,0 @@
+-package ru.javawebinar.topjava.web.meal;
+-
+-import org.springframework.stereotype.Controller;
+-import org.springframework.ui.Model;
+-import org.springframework.web.bind.annotation.GetMapping;
+-import org.springframework.web.bind.annotation.PostMapping;
+-import org.springframework.web.bind.annotation.RequestMapping;
+-import ru.javawebinar.topjava.model.Meal;
+-import ru.javawebinar.topjava.util.TimeUtil;
+-
+-import javax.servlet.http.HttpServletRequest;
+-import java.time.LocalDate;
+-import java.time.LocalDateTime;
+-import java.time.LocalTime;
+-import java.time.temporal.ChronoUnit;
+-import java.util.Objects;
+-
+-/**
+- * gkislin
+- * 16.10.2016
+- */
+-@Controller
+-@RequestMapping(value = "/meals")
+-public class JspMealController extends AbstractMealController {
+-
+-    @GetMapping("/delete")
+-    public String delete(HttpServletRequest request) {
+-        super.delete(getId(request));
+-        return "redirect:/meals";
+-    }
+-
+-    @GetMapping("/update")
+-    public String update(HttpServletRequest request, Model model) {
+-        model.addAttribute("meal", super.get(getId(request)));
+-        return "meal";
+-    }
+-
+-    @GetMapping("/create")
+-    public String create(Model model) {
+-        model.addAttribute("meal", new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS), "", 1000));
+-        return "meal";
+-    }
+-
+-    @PostMapping
+-    public String updateOrCreate(HttpServletRequest request) {
+-        String id = request.getParameter("id");
+-        Meal meal = new Meal(id.isEmpty() ? null : Integer.valueOf(id),
+-                LocalDateTime.parse(request.getParameter("dateTime")),
+-                request.getParameter("description"),
+-                Integer.valueOf(request.getParameter("calories")));
+-
+-        if (meal.isNew()) {
+-            super.create(meal);
+-        } else {
+-            super.update(meal, meal.getId());
+-        }
+-        return "redirect:/meals";
+-    }
+-
+-    @PostMapping("/filter")
+-    public String getBetween(HttpServletRequest request, Model model) {
+-        LocalDate startDate = TimeUtil.parseLocalDate(request.getParameter("startDate"));
+-        LocalDate endDate = TimeUtil.parseLocalDate(request.getParameter("endDate"));
+-        LocalTime startTime = TimeUtil.parseLocalTime(request.getParameter("startTime"));
+-        LocalTime endTime = TimeUtil.parseLocalTime(request.getParameter("endTime"));
+-        model.addAttribute("meals", super.getBetween(startDate, startTime, endDate, endTime));
+-        return "meals";
+-    }
+-
+-    private int getId(HttpServletRequest request) {
+-        String paramId = Objects.requireNonNull(request.getParameter("id"));
+-        return Integer.valueOf(paramId);
+-    }
+-}
+Index: src/main/webapp/resources/js/datatablesUtil.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/resources/js/datatablesUtil.js	(date 1478091001000)
++++ src/main/webapp/resources/js/datatablesUtil.js	(revision )
+@@ -1,20 +1,14 @@
+-function makeEditable() {
+-    $('.delete').click(function () {
+-        deleteRow($(this).attr("id"));
+-    });
++var form;
+ 
+-    $('#detailsForm').submit(function () {
+-        save();
+-        return false;
+-    });
+-
++function makeEditable() {
++    form = $('#detailsForm');
+     $(document).ajaxError(function (event, jqXHR, options, jsExc) {
+         failNoty(event, jqXHR, options, jsExc);
+     });
+ }
+ 
+ function add() {
+-    $('#id').val(null);
++    form.find(":input").val("");
+     $('#editRow').modal();
+ }
+ 
+@@ -29,18 +23,15 @@
+     });
+ }
+ 
+-function updateTable() {
+-    $.get(ajaxUrl, function (data) {
++function updateTableByData(data) {
+-        datatableApi.fnClearTable();
+-        $.each(data, function (key, item) {
+-            datatableApi.fnAddData(item);
+-        });
+-        datatableApi.fnDraw();
++    datatableApi.fnClearTable();
++    $.each(data, function (key, item) {
++        datatableApi.fnAddData(item);
++    });
++    datatableApi.fnDraw();
+-    });
+ }
+ 
+ function save() {
+-    var form = $('#detailsForm');
+     $.ajax({
+         type: "POST",
+         url: ajaxUrl,
+Index: src/main/webapp/WEB-INF/jsp/users.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/users.jsp	(date 1478091001000)
++++ src/main/webapp/WEB-INF/jsp/users.jsp	(revision )
+@@ -40,8 +40,8 @@
+                                        <c:if test="${user.enabled}">checked</c:if> id="${user.id}"/>
+                             </td>
+                             <td><fmt:formatDate value="${user.registered}" pattern="dd-MMMM-yyyy"/></td>
+-                            <td><a class="btn btn-xs btn-primary edit" id="${user.id}"><fmt:message key="common.update"/></a></td>
+-                            <td><a class="btn btn-xs btn-danger delete" id="${user.id}"><fmt:message key="common.delete"/></a></td>
++                            <td><a class="btn btn-xs btn-primary"><fmt:message key="common.update"/></a></td>
++                            <td><a class="btn btn-xs btn-danger" onclick="deleteRow(${user.id})"><fmt:message key="common.delete"/></a></td>
+                         </tr>
+                     </c:forEach>
+                 </table>
+@@ -88,7 +88,7 @@
+ 
+                     <div class="form-group">
+                         <div class="col-xs-offset-3 col-xs-9">
+-                            <button type="submit" class="btn btn-primary"><fmt:message key="common.save"/></button>
++                            <button class="btn btn-primary"  type="button" onclick="save()"><fmt:message key="common.save"/></button>
+                         </div>
+                     </div>
+                 </form>
+@@ -107,6 +107,10 @@
+ 
+     var ajaxUrl = 'ajax/admin/users/';
+     var datatableApi;
++
++    function updateTable() {
++        $.get(ajaxUrl, updateTableByData);
++    }
+ 
+     // $(document).ready(function () {
+     $(function () {
+\ No newline at end of file
+Index: src/main/resources/logback.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/resources/logback.xml	(date 1478091001000)
++++ src/main/resources/logback.xml	(revision )
+@@ -20,7 +20,7 @@
+         </encoder>
+     </appender>
+ 
+-    <!--<logger name="org.springframework.web" level="DEBUG"/>-->
++    <logger name="org.springframework.web" level="DEBUG"/>
+     <logger name="org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver" level="debug"/>
+     <logger name="org.springframework.security" level="debug"/>
+     <logger name="ru.javawebinar.topjava" level="debug"/>
